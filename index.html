@@ -3,123 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welper Panel 100% JALAN</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <title>CPanel Welper - Panel Management System</title>
+    <!-- Load React -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { background: #000; color: white; margin: 0; font-family: Arial, sans-serif; }
-        .glass { background: rgba(88, 28, 135, 0.2); backdrop-filter: blur(10px); border: 1px solid #a855f7; }
-        .gradient { background: linear-gradient(90deg, #8b5cf6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        body {
+            background: #0a0a0a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .glass-effect {
+            background: rgba(88, 28, 135, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #8b5cf6, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
+        }
     </style>
 </head>
-<body>
+<body class="text-white">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
-
+        const { useState, useEffect } = React;
+        
+        // Main App Component
         function App() {
-            // ============ SIMPLE LOGIN ============
+            // ============ CONFIGURATION STATE ============
+            const [config, setConfig] = useState({
+                panelDomain: "https://9.welperoffcial.my.id",
+                apiKey: "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC",
+                clientApiKey: "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5",
+                defaultPassword: "Weleprtzy8#13",
+                defaultEggId: "1" // Ganti dengan ID egg "wa" Anda di panel
+            });
+            
+            // ============ LOGIN STATE ============
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [username, setUsername] = useState('');
             const [password, setPassword] = useState('');
             
-            // LOGIN PALING SIMPLE
+            // Simple login handler
             const handleLogin = () => {
-                // USERNAME & PASSWORD MU - GANTI DISINI
-                if (username === "welper" && password === "123456") {
+                if (username === "welper" && password === "admin123") {
                     setIsLoggedIn(true);
                 } else {
-                    alert("Pakai:\nUsername: welper\nPassword: 123456");
+                    alert("Gunakan:\nUsername: welper\nPassword: admin123");
                 }
             };
             
-            // ============ PANEL STATE ============
+            // ============ PANEL CREATION STATE ============
             const [activeMenu, setActiveMenu] = useState('create');
-            const [serverName, setServerName] = useState('');
-            const [cpu, setCpu] = useState('1');
-            const [disk, setDisk] = useState('1');
-            const [result, setResult] = useState(null);
-            const [servers, setServers] = useState([]);
-            const [createdCount, setCreatedCount] = useState(0);
+            const [panelName, setPanelName] = useState('');
+            const [panelUsername, setPanelUsername] = useState('');
+            const [panelPassword, setPanelPassword] = useState(config.defaultPassword);
+            const [ram, setRam] = useState('1');
+            const [disk, setDisk] = useState('10');
+            const [cpu, setCpu] = useState('100');
+            
+            const [creationResult, setCreationResult] = useState(null);
+            const [createdPanels, setCreatedPanels] = useState([]);
+            const [totalCreated, setTotalCreated] = useState(0);
             
             // ============ CREATE PANEL FUNCTION ============
-            const createPanel = () => {
-                if (!serverName.trim()) {
-                    alert('Masukkan nama server!');
+            const createPanel = async () => {
+                if (!panelName.trim() || !panelUsername.trim()) {
+                    alert('Harap isi nama panel dan username!');
                     return;
                 }
                 
-                // SIMULASI 100% BERHASIL - TANPA API
-                const successMessage = {
+                // Generate panel data
+                const panelData = {
                     success: true,
                     status: true,
-                    message: `Panel "${serverName}" berhasil dibuat!`,
+                    message: "✅ Berhasil membuat akun panel",
                     data: {
-                        server_id: "SRV-" + Date.now(),
-                        name: serverName,
-                        cpu: cpu === '0' ? 'Unlimited' : cpu + ' Core',
+                        server_id: "P-" + Date.now().toString().slice(-8),
+                        name: panelName,
+                        username: panelUsername || panelName.toLowerCase().replace(/\s/g, ''),
+                        password: panelPassword || config.defaultPassword,
+                        created_at: new Date().toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }),
+                        activation_date: new Date().toLocaleDateString('id-ID'),
+                        ram: ram === '0' ? 'Unlimited' : ram + ' GB',
                         disk: disk === '0' ? 'Unlimited' : disk + ' GB',
-                        created_at: new Date().toLocaleString(),
-                        note: "Mode Local - 100% Working"
+                        cpu: cpu === '0' ? 'Unlimited' : cpu + ' %',
+                        domain: config.panelDomain,
+                        egg_id: config.defaultEggId
                     }
                 };
                 
-                setResult(successMessage);
+                setCreationResult(panelData);
                 
-                // Tambah ke server list
-                const newServer = {
+                // Add to created panels list
+                const newPanel = {
                     id: Date.now(),
-                    name: serverName,
-                    cpu: cpu === '0' ? 'Unlimited' : cpu + ' Core',
-                    disk: disk === '0' ? 'Unlimited' : disk + ' GB',
-                    created: new Date().toLocaleTimeString(),
+                    name: panelName,
+                    username: panelData.data.username,
+                    password: panelData.data.password,
+                    created: new Date().toLocaleString(),
+                    ram: panelData.data.ram,
+                    disk: panelData.data.disk,
+                    cpu: panelData.data.cpu,
                     status: 'Active'
                 };
                 
-                setServers(prev => [newServer, ...prev]);
-                setCreatedCount(prev => prev + 1);
-                setServerName('');
+                setCreatedPanels(prev => [newPanel, ...prev]);
+                setTotalCreated(prev => prev + 1);
+                
+                // Reset form
+                setPanelName('');
+                setPanelUsername('');
+                setPanelPassword(config.defaultPassword);
+            };
+            
+            // ============ COPY RESULT FUNCTION ============
+            const copyResultToClipboard = () => {
+                if (!creationResult) return;
+                
+                const resultText = `
+${creationResult.message}
+
+📡 Server ID: ${creationResult.data.server_id}
+👤 Username: ${creationResult.data.username}
+🔐 Password: ${creationResult.data.password}
+🗓️ Tanggal Aktivasi: ${creationResult.data.activation_date}
+
+⚙️ Spesifikasi server panel:
+RAM: ${creationResult.data.ram}
+Disk: ${creationResult.data.disk}
+CPU: ${creationResult.data.cpu}
+Domain: ${creationResult.data.domain}
+
+📝 Rules pembelian panel:
+- Masa aktif 30 hari
+- Data bersifat pribadi, simpan dengan aman
+- Garansi berlaku 25-30 hari Full Sampai masa aktif berakhir
+- Klaim garansi wajib menyertakan bukti chat pembelian
+                `.trim();
+                
+                navigator.clipboard.writeText(resultText)
+                    .then(() => alert('✅ Hasil berhasil disalin ke clipboard!'))
+                    .catch(err => console.error('Gagal menyalin:', err));
             };
             
             // ============ LOGIN PAGE ============
             if (!isLoggedIn) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-purple-900 to-black p-4">
-                        <div className="glass p-8 rounded-3xl w-full max-w-md">
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-purple-900/30 to-black p-4">
+                        <div className="glass-effect rounded-3xl p-8 w-full max-w-md">
                             <div className="text-center mb-8">
-                                <img src="https://files.catbox.moe/o1ojay.jpg" alt="Logo" className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-500" />
-                                <h1 className="text-3xl font-bold gradient mb-2">WELPER PANEL</h1>
-                                <p className="text-purple-300">100% Working Version</p>
+                                <div className="inline-block p-3 rounded-full gradient-bg mb-4">
+                                    <img 
+                                        src="https://files.catbox.moe/o1ojay.jpg" 
+                                        alt="CPanel Welper Logo" 
+                                        className="w-24 h-24 rounded-full border-4 border-white/20"
+                                    />
+                                </div>
+                                <h1 className="text-4xl font-bold gradient-text mb-2">
+                                    CPANEL WELPER
+                                </h1>
+                                <p className="text-purple-300 text-lg">Panel Management System</p>
                             </div>
                             
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-purple-300 mb-2">Username</label>
-                                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} 
-                                           className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white" 
-                                           placeholder="Masukkan username" />
+                                    <input
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        placeholder="Masukkan username"
+                                        className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white placeholder-gray-400"
+                                    />
                                 </div>
                                 
                                 <div>
                                     <label className="block text-purple-300 mb-2">
                                         Password <span className="text-green-400 text-sm">(terlihat)</span>
                                     </label>
-                                    <input type="text" value={password} onChange={(e) => setPassword(e.target.value)}
-                                           onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                                           className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
-                                           placeholder="Masukkan password" />
+                                    <input
+                                        type="text"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                                        placeholder="Masukkan password"
+                                        className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white placeholder-gray-400"
+                                    />
                                 </div>
                                 
-                                <button onClick={handleLogin} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-xl text-lg">
-                                    <i className="fas fa-sign-in-alt mr-2"></i>LOGIN
+                                <button
+                                    onClick={handleLogin}
+                                    className="w-full btn-primary text-white font-bold py-4 rounded-xl text-lg hover:scale-[1.02] transition-transform"
+                                >
+                                    <i className="fas fa-sign-in-alt mr-2"></i>
+                                    LOGIN TO PANEL
                                 </button>
                                 
                                 <div className="text-center text-purple-400 text-sm">
-                                    <p>Default: welper / 123456</p>
+                                    <p>Default: welper / admin123</p>
                                 </div>
                             </div>
                         </div>
@@ -131,23 +240,30 @@
             return (
                 <div className="min-h-screen bg-black">
                     {/* Header */}
-                    <header className="glass p-4 border-b border-purple-900">
-                        <div className="max-w-6xl mx-auto flex justify-between items-center">
+                    <header className="glass-effect p-4 border-b border-purple-900">
+                        <div className="max-w-7xl mx-auto flex justify-between items-center">
                             <div className="flex items-center gap-3">
-                                <img src="https://files.catbox.moe/o1ojay.jpg" alt="Logo" className="w-10 h-10 rounded-full" />
+                                <img 
+                                    src="https://files.catbox.moe/o1ojay.jpg" 
+                                    alt="Logo" 
+                                    className="w-10 h-10 rounded-full border-2 border-purple-500"
+                                />
                                 <div>
-                                    <h1 className="text-xl font-bold gradient">Welper Panel</h1>
-                                    <p className="text-purple-400 text-sm">100% Working</p>
+                                    <h1 className="text-xl font-bold gradient-text">CPANEL WELPER</h1>
+                                    <p className="text-purple-400 text-sm">Panel Creation System</p>
                                 </div>
                             </div>
                             
                             <div className="flex items-center gap-4">
                                 <div className="text-right">
-                                    <p className="text-purple-300">Servers: <span className="font-bold">{servers.length}</span></p>
-                                    <p className="text-purple-300 text-sm">Created: <span className="font-bold">{createdCount}</span></p>
+                                    <p className="text-purple-300">Panels Created: <span className="font-bold">{totalCreated}</span></p>
+                                    <p className="text-purple-300 text-sm">Active: <span className="font-bold">{createdPanels.length}</span></p>
                                 </div>
                                 
-                                <button onClick={() => setIsLoggedIn(false)} className="px-4 py-2 bg-red-900 hover:bg-red-800 rounded-lg">
+                                <button 
+                                    onClick={() => setIsLoggedIn(false)}
+                                    className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg transition"
+                                >
                                     <i className="fas fa-sign-out-alt mr-2"></i>Logout
                                 </button>
                             </div>
@@ -156,127 +272,275 @@
                     
                     {/* Navigation */}
                     <div className="p-4 border-b border-purple-900">
-                        <div className="max-w-6xl mx-auto flex gap-2 flex-wrap">
-                            {['dashboard', 'create', 'servers'].map(menu => (
-                                <button key={menu} onClick={() => setActiveMenu(menu)}
-                                        className={`px-4 py-2 rounded-lg ${activeMenu === menu ? 'bg-purple-700' : 'bg-gray-900'} text-white capitalize`}>
-                                    {menu}
-                                </button>
-                            ))}
+                        <div className="max-w-7xl mx-auto flex flex-wrap gap-2">
+                            <button 
+                                onClick={() => setActiveMenu('create')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'create' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                <i className="fas fa-plus-circle mr-2"></i>Create Panel
+                            </button>
+                            <button 
+                                onClick={() => setActiveMenu('panels')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'panels' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                <i className="fas fa-server mr-2"></i>My Panels ({createdPanels.length})
+                            </button>
+                            <button 
+                                onClick={() => setActiveMenu('config')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'config' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                <i className="fas fa-cog mr-2"></i>Configuration
+                            </button>
                         </div>
                     </div>
                     
                     {/* Main Content */}
-                    <main className="max-w-6xl mx-auto p-4">
-                        {/* Dashboard */}
-                        {activeMenu === 'dashboard' && (
-                            <div className="glass rounded-2xl p-6">
-                                <h2 className="text-2xl font-bold gradient mb-6">Dashboard</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <div className="bg-black/40 p-5 rounded-xl text-center">
-                                        <p className="text-4xl font-bold gradient mb-2">{servers.length}</p>
-                                        <p className="text-purple-300">Total Servers</p>
+                    <main className="max-w-7xl mx-auto p-4">
+                        {/* Create Panel Section */}
+                        {activeMenu === 'create' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient-text mb-6">
+                                    <i className="fas fa-plus-circle mr-2"></i>
+                                    Create New Panel
+                                </h2>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Left Column - Form */}
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-tag mr-2"></i>Panel Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={panelName}
+                                                onChange={(e) => setPanelName(e.target.value)}
+                                                placeholder="Contoh: welper-panel-01"
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-user mr-2"></i>Username
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={panelUsername}
+                                                onChange={(e) => setPanelUsername(e.target.value)}
+                                                placeholder="Username untuk login panel"
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-key mr-2"></i>Password
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={panelPassword}
+                                                onChange={(e) => setPanelPassword(e.target.value)}
+                                                placeholder="Password untuk login panel"
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            />
+                                            <p className="text-purple-400 text-sm mt-1">
+                                                Default: {config.defaultPassword}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="bg-black/40 p-5 rounded-xl text-center">
-                                        <p className="text-4xl font-bold gradient mb-2">{createdCount}</p>
-                                        <p className="text-purple-300">Created</p>
-                                    </div>
-                                    <div className="bg-black/40 p-5 rounded-xl text-center">
-                                        <p className="text-4xl font-bold text-green-400 mb-2">Online</p>
-                                        <p className="text-purple-300">Status</p>
+                                    
+                                    {/* Right Column - Resources */}
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-memory mr-2"></i>RAM Allocation
+                                            </label>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].map((gb) => (
+                                                    <button
+                                                        key={gb}
+                                                        onClick={() => setRam(gb)}
+                                                        className={`p-3 rounded-lg transition ${ram === gb ? 'gradient-bg text-white' : 'bg-black/40 border border-purple-700/30 hover:bg-purple-900/20'}`}
+                                                    >
+                                                        {gb === '0' ? 'Unli' : `${gb} GB`}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-hdd mr-2"></i>Disk Storage (GB)
+                                            </label>
+                                            <select 
+                                                value={disk}
+                                                onChange={(e) => setDisk(e.target.value)}
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            >
+                                                <option value="0">Unlimited</option>
+                                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50, 100].map((size) => (
+                                                    <option key={size} value={size}>{size} GB</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-microchip mr-2"></i>CPU Limit (%)
+                                            </label>
+                                            <select 
+                                                value={cpu}
+                                                onChange={(e) => setCpu(e.target.value)}
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            >
+                                                <option value="0">Unlimited</option>
+                                                {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200].map((percent) => (
+                                                    <option key={percent} value={percent}>{percent}%</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                <button onClick={() => setActiveMenu('create')} className="px-6 py-3 bg-purple-700 hover:bg-purple-800 rounded-lg">
-                                    Create New Server
+                                
+                                {/* Current Selection Summary */}
+                                <div className="mt-6 p-4 bg-black/40 border border-purple-700/30 rounded-xl">
+                                    <h3 className="font-bold text-white mb-3">Current Configuration</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
+                                            <p className="text-purple-300 text-sm">RAM</p>
+                                            <p className="text-xl font-bold text-white">
+                                                {ram === '0' ? 'Unlimited' : `${ram} GB`}
+                                            </p>
+                                        </div>
+                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
+                                            <p className="text-purple-300 text-sm">Disk</p>
+                                            <p className="text-xl font-bold text-white">
+                                                {disk === '0' ? 'Unlimited' : `${disk} GB`}
+                                            </p>
+                                        </div>
+                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
+                                            <p className="text-purple-300 text-sm">CPU</p>
+                                            <p className="text-xl font-bold text-white">
+                                                {cpu === '0' ? 'Unlimited' : `${cpu}%`}
+                                            </p>
+                                        </div>
+                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
+                                            <p className="text-purple-300 text-sm">Egg</p>
+                                            <p className="text-xl font-bold text-white">WA</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Create Button */}
+                                <button
+                                    onClick={createPanel}
+                                    disabled={!panelName.trim()}
+                                    className={`w-full mt-6 py-4 rounded-xl text-lg font-bold transition-all ${!panelName.trim() ? 'opacity-70 cursor-not-allowed bg-gray-800' : 'btn-primary hover:scale-[1.02]'}`}
+                                >
+                                    <i className="fas fa-bolt mr-2"></i>
+                                    CREATE PANEL NOW
                                 </button>
                             </div>
                         )}
                         
-                        {/* Create Panel */}
-                        {activeMenu === 'create' && (
-                            <div className="glass rounded-2xl p-6">
-                                <h2 className="text-2xl font-bold gradient mb-6">Create New Panel</h2>
-                                <div className="space-y-4">
+                        {/* My Panels Section */}
+                        {activeMenu === 'panels' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <div className="flex justify-between items-center mb-6">
                                     <div>
-                                        <label className="block text-purple-300 mb-2">Server Name</label>
-                                        <input type="text" value={serverName} onChange={(e) => setServerName(e.target.value)}
-                                               className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
-                                               placeholder="Contoh: server-ku" />
+                                        <h2 className="text-2xl font-bold gradient-text">
+                                            <i className="fas fa-server mr-2"></i>
+                                            My Panels
+                                        </h2>
+                                        <p className="text-purple-300">Total: {createdPanels.length} panels</p>
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-purple-300 mb-2">CPU Cores</label>
-                                            <select value={cpu} onChange={(e) => setCpu(e.target.value)} className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white">
-                                                <option value="0">Unlimited</option>
-                                                <option value="1">1 Core</option>
-                                                <option value="2">2 Cores</option>
-                                                <option value="3">3 Cores</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-purple-300 mb-2">Disk Storage</label>
-                                            <select value={disk} onChange={(e) => setDisk(e.target.value)} className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white">
-                                                <option value="0">Unlimited</option>
-                                                <option value="1">1 GB</option>
-                                                <option value="2">2 GB</option>
-                                                <option value="3">3 GB</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="p-4 bg-black/40 rounded-xl">
-                                        <h3 className="font-bold text-white mb-2">Current Selection</h3>
-                                        <p className="text-purple-300">CPU: {cpu === '0' ? 'Unlimited' : cpu + ' Core(s)'}</p>
-                                        <p className="text-purple-300">Disk: {disk === '0' ? 'Unlimited' : disk + ' GB'}</p>
-                                    </div>
-                                    
-                                    <button onClick={createPanel} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-xl text-lg">
-                                        <i className="fas fa-bolt mr-2"></i>CREATE PANEL
-                                    </button>
+                                    {createdPanels.length > 0 && (
+                                        <button 
+                                            onClick={() => {
+                                                setCreatedPanels([]);
+                                                setTotalCreated(0);
+                                            }}
+                                            className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg transition"
+                                        >
+                                            <i className="fas fa-trash mr-2"></i>
+                                            Clear All
+                                        </button>
+                                    )}
                                 </div>
-                            </div>
-                        )}
-                        
-                        {/* Servers List */}
-                        {activeMenu === 'servers' && (
-                            <div className="glass rounded-2xl p-6">
-                                <h2 className="text-2xl font-bold gradient mb-6">My Servers ({servers.length})</h2>
-                                {servers.length === 0 ? (
+                                
+                                {createdPanels.length === 0 ? (
                                     <div className="text-center py-12">
                                         <i className="fas fa-server text-6xl text-purple-700 mb-4"></i>
-                                        <p className="text-purple-400 mb-6">No servers yet</p>
-                                        <button onClick={() => setActiveMenu('create')} className="px-6 py-3 bg-purple-700 rounded-lg">
-                                            Create First Server
+                                        <h3 className="text-xl font-bold text-white mb-2">No Panels Created Yet</h3>
+                                        <p className="text-purple-400 mb-6">Create your first panel to get started</p>
+                                        <button 
+                                            onClick={() => setActiveMenu('create')}
+                                            className="btn-primary px-6 py-3 rounded-lg"
+                                        >
+                                            <i className="fas fa-plus mr-2"></i>
+                                            Create First Panel
                                         </button>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {servers.map(server => (
-                                            <div key={server.id} className="bg-black/40 border border-purple-700 rounded-xl p-5">
+                                        {createdPanels.map(panel => (
+                                            <div key={panel.id} className="bg-black/40 border border-purple-700/30 rounded-xl p-5">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <h3 className="font-bold text-lg">{server.name}</h3>
-                                                        <p className="text-purple-400 text-sm">{server.created}</p>
+                                                        <h3 className="font-bold text-lg text-white mb-1">{panel.name}</h3>
+                                                        <p className="text-purple-400 text-sm">{panel.created}</p>
                                                     </div>
-                                                    <button onClick={() => setServers(prev => prev.filter(s => s.id !== server.id))} 
-                                                            className="p-2 bg-red-900 hover:bg-red-800 rounded-lg">
-                                                        <i className="fas fa-trash"></i>
+                                                    <button 
+                                                        onClick={() => setCreatedPanels(prev => prev.filter(p => p.id !== panel.id))}
+                                                        className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg"
+                                                    >
+                                                        <i className="fas fa-times text-red-400"></i>
                                                     </button>
                                                 </div>
-                                                <div className="space-y-2">
+                                                
+                                                <div className="space-y-2 mb-4">
                                                     <div className="flex justify-between">
-                                                        <span className="text-purple-300">CPU:</span>
-                                                        <span className="font-bold">{server.cpu}</span>
+                                                        <span className="text-purple-300">Username:</span>
+                                                        <span className="font-bold text-white">{panel.username}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">Password:</span>
+                                                        <span className="font-bold text-white">{panel.password}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">RAM:</span>
+                                                        <span className="font-bold text-white">{panel.ram}</span>
                                                     </div>
                                                     <div className="flex justify-between">
                                                         <span className="text-purple-300">Disk:</span>
-                                                        <span className="font-bold">{server.disk}</span>
+                                                        <span className="font-bold text-white">{panel.disk}</span>
                                                     </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-purple-300">Status:</span>
-                                                        <span className="px-2 py-1 bg-green-900 text-green-300 rounded text-xs">Active</span>
-                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex justify-between items-center pt-4 border-t border-purple-800/30">
+                                                    <span className="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">
+                                                        {panel.status}
+                                                    </span>
+                                                    <button 
+                                                        onClick={() => {
+                                                            const panelText = `
+Panel: ${panel.name}
+Username: ${panel.username}
+Password: ${panel.password}
+RAM: ${panel.ram}
+Disk: ${panel.disk}
+CPU: ${panel.cpu}
+Created: ${panel.created}
+                                                            `.trim();
+                                                            navigator.clipboard.writeText(panelText);
+                                                            alert('Panel info copied to clipboard!');
+                                                        }}
+                                                        className="px-3 py-1 bg-purple-900/40 hover:bg-purple-800/60 rounded text-sm"
+                                                    >
+                                                        <i className="fas fa-copy mr-1"></i>Copy
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
@@ -284,35 +548,217 @@
                                 )}
                             </div>
                         )}
+                        
+                        {/* Configuration Section */}
+                        {activeMenu === 'config' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient-text mb-6">
+                                    <i className="fas fa-cog mr-2"></i>
+                                    System Configuration
+                                </h2>
+                                
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Panel Domain</label>
+                                        <input
+                                            type="text"
+                                            value={config.panelDomain}
+                                            onChange={(e) => setConfig({...config, panelDomain: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Application API Key</label>
+                                        <input
+                                            type="text"
+                                            value={config.apiKey}
+                                            onChange={(e) => setConfig({...config, apiKey: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Client API Key</label>
+                                        <input
+                                            type="text"
+                                            value={config.clientApiKey}
+                                            onChange={(e) => setConfig({...config, clientApiKey: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Default Password</label>
+                                        <input
+                                            type="text"
+                                            value={config.defaultPassword}
+                                            onChange={(e) => setConfig({...config, defaultPassword: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Egg ID (WA)</label>
+                                        <input
+                                            type="text"
+                                            value={config.defaultEggId}
+                                            onChange={(e) => setConfig({...config, defaultEggId: e.target.value})}
+                                            placeholder="Masukkan ID egg 'wa' dari panel Anda"
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                        <p className="text-purple-400 text-sm mt-1">
+                                            Note: Ganti dengan ID egg "wa" yang ada di panel Pterodactyl Anda
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="flex gap-4">
+                                        <button 
+                                            onClick={() => alert('Configuration saved!')}
+                                            className="px-6 py-3 btn-primary rounded-lg"
+                                        >
+                                            <i className="fas fa-save mr-2"></i>Save Configuration
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => {
+                                                setConfig({
+                                                    panelDomain: "https://9.welperoffcial.my.id",
+                                                    apiKey: "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC",
+                                                    clientApiKey: "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5",
+                                                    defaultPassword: "Weleprtzy8#13",
+                                                    defaultEggId: "1"
+                                                });
+                                                alert('Configuration reset to default!');
+                                            }}
+                                            className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg"
+                                        >
+                                            <i className="fas fa-undo mr-2"></i>Reset to Default
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </main>
                     
                     {/* Footer */}
                     <footer className="p-4 border-t border-purple-900 mt-8">
-                        <div className="max-w-6xl mx-auto text-center text-purple-400">
-                            <p>Welper Panel • 100% Working • Local Mode</p>
+                        <div className="max-w-7xl mx-auto text-center text-purple-400">
+                            <p>
+                                <i className="fas fa-code mr-2"></i>
+                                CPANEL WELPER • Version 3.0 • Local Simulation Mode
+                            </p>
+                            <p className="text-sm mt-1">
+                                All data is stored locally in your browser. For real API integration, configure backend proxy.
+                            </p>
                         </div>
                     </footer>
                     
-                    {/* Result Modal */}
-                    {result && (
-                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                            <div className="glass rounded-2xl w-full max-w-2xl p-6">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-xl font-bold gradient">Success!</h3>
-                                    <button onClick={() => setResult(null)} className="p-2 hover:bg-purple-800 rounded-lg">
-                                        <i className="fas fa-times"></i>
+                    {/* Success Modal */}
+                    {creationResult && (
+                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div className="glass-effect rounded-2xl w-full max-w-2xl overflow-hidden">
+                                <div className="p-5 border-b border-purple-800 flex justify-between items-center">
+                                    <h3 className="text-xl font-bold gradient-text">
+                                        <i className="fas fa-check-circle mr-2"></i>
+                                        Panel Creation Successful!
+                                    </h3>
+                                    <button 
+                                        onClick={() => setCreationResult(null)}
+                                        className="p-2 hover:bg-purple-800/30 rounded-lg"
+                                    >
+                                        <i className="fas fa-times text-purple-400"></i>
                                     </button>
                                 </div>
-                                <div className="bg-black/40 rounded-xl p-4 mb-6">
-                                    <p className="text-green-400 text-lg mb-2">{result.message}</p>
-                                    <div className="text-purple-300 text-sm">
-                                        <p>Server ID: {result.data.server_id}</p>
-                                        <p>Created: {result.data.created_at}</p>
+                                
+                                <div className="p-5">
+                                    {/* Success Message */}
+                                    <div className="mb-6 p-4 bg-green-900/20 border border-green-700/30 rounded-xl">
+                                        <p className="text-green-300 text-lg font-bold">
+                                            {creationResult.message}
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Panel Details */}
+                                    <div className="bg-black/40 rounded-xl p-4 mb-6">
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between">
+                                                <span className="text-purple-300">📡 Server ID:</span>
+                                                <span className="font-bold text-white">{creationResult.data.server_id}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-purple-300">👤 Username:</span>
+                                                <span className="font-bold text-white">{creationResult.data.username}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-purple-300">🔐 Password:</span>
+                                                <span className="font-bold text-white">{creationResult.data.password}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-purple-300">🗓️ Tanggal Aktivasi:</span>
+                                                <span className="font-bold text-white">{creationResult.data.activation_date}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4 pt-4 border-t border-purple-800">
+                                            <h4 className="font-bold text-white mb-2">⚙️ Spesifikasi server panel:</h4>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <span className="text-purple-300">RAM:</span>
+                                                    <span className="ml-2 font-bold">{creationResult.data.ram}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-purple-300">Disk:</span>
+                                                    <span className="ml-2 font-bold">{creationResult.data.disk}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-purple-300">CPU:</span>
+                                                    <span className="ml-2 font-bold">{creationResult.data.cpu}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-purple-300">Domain:</span>
+                                                    <span className="ml-2 font-bold">{creationResult.data.domain}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Rules Section */}
+                                    <div className="mb-6 p-4 bg-purple-900/20 border border-purple-700/30 rounded-xl">
+                                        <h4 className="font-bold text-white mb-2">📝 Rules pembelian panel:</h4>
+                                        <ul className="text-purple-300 text-sm space-y-1">
+                                            <li>- Masa aktif 30 hari</li>
+                                            <li>- Data bersifat pribadi, simpan dengan aman</li>
+                                            <li>- Garansi berlaku 25-30 hari Full Sampai masa aktif berakhir</li>
+                                            <li>- Klaim garansi wajib menyertakan bukti chat pembelian</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    {/* Action Buttons */}
+                                    <div className="flex flex-wrap gap-3 justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                                            <span className="text-green-400 font-bold">SUCCESS</span>
+                                        </div>
+                                        
+                                        <div className="flex gap-3">
+                                            <button 
+                                                onClick={copyResultToClipboard}
+                                                className="px-4 py-3 bg-purple-900/40 hover:bg-purple-800/60 rounded-xl transition flex items-center gap-2"
+                                            >
+                                                <i className="fas fa-copy"></i>
+                                                Copy All Details
+                                            </button>
+                                            <button 
+                                                onClick={() => setCreationResult(null)}
+                                                className="px-4 py-3 bg-red-900/40 hover:bg-red-800/60 rounded-xl transition flex items-center gap-2"
+                                            >
+                                                <i className="fas fa-times"></i>
+                                                Close
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <button onClick={() => setResult(null)} className="w-full bg-purple-700 hover:bg-purple-800 py-3 rounded-lg">
-                                    OK
-                                </button>
                             </div>
                         </div>
                     )}
@@ -320,7 +766,7 @@
             );
         }
         
-        // RENDER
+        // Render the app
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
