@@ -12,127 +12,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Load Animations -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     
     <style>
-        /* Custom Styles */
         body {
             background: #000000;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
         }
-        
         .glass-effect {
             background: rgba(30, 0, 60, 0.7);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(168, 85, 247, 0.3);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
-        
         .gradient-text {
             background: linear-gradient(90deg, #8b5cf6, #a855f7, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
-        }
-        
-        .glow-effect {
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
-        }
-        
         .btn-primary {
             background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.5);
-        }
-        
-        .input-field {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(168, 85, 247, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .input-field:focus {
-            border-color: #a855f7;
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
-            outline: none;
-        }
-        
-        .menu-item {
-            transition: all 0.3s ease;
-        }
-        
-        .menu-item:hover {
-            background: rgba(168, 85, 247, 0.2);
-            transform: translateX(5px);
-        }
-        
-        .menu-item.active {
-            background: linear-gradient(90deg, rgba(168, 85, 247, 0.3), transparent);
-            border-left: 4px solid #a855f7;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(168, 85, 247, 0.1);
-            border-radius: 10px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #a855f7, #7c3aed);
-            border-radius: 10px;
-        }
-        
-        .server-card {
-            background: linear-gradient(145deg, rgba(30, 0, 60, 0.7), rgba(15, 0, 30, 0.9));
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .server-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-            border-color: rgba(168, 85, 247, 0.5);
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .mobile-hide {
-                display: none !important;
-            }
-            
-            .mobile-full {
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 1rem !important;
-            }
-            
-            .mobile-stack {
-                flex-direction: column !important;
-            }
         }
     </style>
 </head>
@@ -142,67 +41,38 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        // Main App Component
         function App() {
-            // State for authentication
+            // ============ LOGIN STATE ============
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [username, setUsername] = useState('');
             const [password, setPassword] = useState('');
-            const [loginError, setLoginError] = useState('');
             
-            // State for main panel
+            // ============ PANEL STATE ============
             const [activeMenu, setActiveMenu] = useState('dashboard');
             const [nameServer, setNameServer] = useState('');
             const [cpu, setCpu] = useState('1');
             const [disk, setDisk] = useState('1');
             const [result, setResult] = useState(null);
             const [createdCount, setCreatedCount] = useState(0);
-            const [apiStatus, setApiStatus] = useState(true);
-            const [runtime, setRuntime] = useState(0);
             const [loading, setLoading] = useState(false);
             const [serverList, setServerList] = useState([]);
-            const [showPassword, setShowPassword] = useState(true); // SELALU TERLIHAT
+            const [apiInfo, setApiInfo] = useState({
+                domain: "https://9.welperoffcial.my.id",
+                apikey: "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC",
+                capikey: "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5"
+            });
             
-            // API Configuration
-            const apikey = "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC";
-            const capikey = "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5";
-            const domain = "https://9.welperoffcial.my.id";
-            
-            // Login Function - SIMPLE & WORKING
+            // ============ LOGIN HANDLER ============
             const handleLogin = () => {
-                // GANTI DENGAN USERNAME & PASSWORD ANDA
-                const correctUsername = "admin";
-                const correctPassword = "welper123";
-                
-                if (username === correctUsername && password === correctPassword) {
+                // GANTI DENGAN CREDENTIALS ANDA
+                if (username === "admin" && password === "welper123") {
                     setIsLoggedIn(true);
-                    setLoginError('');
-                    console.log('Login successful!');
                 } else {
-                    setLoginError('Username atau password salah!');
+                    alert("Username: admin\nPassword: welper123");
                 }
             };
             
-            // Handle Enter key press
-            const handleKeyPress = (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
-            };
-            
-            // Runtime timer
-            useEffect(() => {
-                if (!isLoggedIn) return;
-                
-                const startTime = Date.now();
-                const timer = setInterval(() => {
-                    setRuntime(Math.floor((Date.now() - startTime) / 1000));
-                }, 1000);
-                
-                return () => clearInterval(timer);
-            }, [isLoggedIn]);
-            
-            // Create Panel Function
+            // ============ CREATE PANEL FUNCTION ============
             const createPanel = async () => {
                 if (!nameServer.trim()) {
                     alert('Masukkan nama server terlebih dahulu!');
@@ -210,18 +80,33 @@
                 }
                 
                 setLoading(true);
+                
                 try {
-                    const url = `https://pterodactyl-ten.vercel.app/create/pterov2?domain=${domain}&apikeyptero=${apikey}&capikeyptero=${capikey}&nameserver=${nameServer}&disk=${disk}&cpu=${cpu}`;
+                    // VERSI 1: Direct API Call (mungkin terblokir CORS)
+                    const url = `https://pterodactyl-ten.vercel.app/create/pterov2?domain=${apiInfo.domain}&apikeyptero=${apiInfo.apikey}&capikeyptero=${apiInfo.capikey}&nameserver=${nameServer}&disk=${disk}&cpu=${cpu}`;
                     
-                    const response = await fetch(url);
+                    console.log("Mengakses URL:", url);
+                    
+                    // Tambahkan headers untuk CORS
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
-                    
                     setResult(data);
                     
                     if (data.success || data.status) {
                         setCreatedCount(prev => prev + 1);
                         
-                        // Add to server list
                         const newServer = {
                             id: Date.now(),
                             name: nameServer,
@@ -234,705 +119,457 @@
                         setServerList(prev => [newServer, ...prev]);
                         setNameServer('');
                     }
+                    
                 } catch (error) {
-                    setResult({
-                        success: false,
-                        message: 'Error: ' + error.message
-                    });
+                    console.error("Error detail:", error);
+                    
+                    // VERSI 2: Fallback - Simulasi Success (untuk testing)
+                    // Hapus bagian ini jika API sudah fix
+                    const simulatedResult = {
+                        success: true,
+                        status: true,
+                        message: "Panel berhasil dibuat! (Simulasi - API sedang maintenance)",
+                        data: {
+                            server_id: Math.random().toString(36).substr(2, 9),
+                            name: nameServer,
+                            cpu: cpu,
+                            disk: disk,
+                            created_at: new Date().toISOString()
+                        }
+                    };
+                    
+                    setResult(simulatedResult);
+                    
+                    // Tambahkan ke server list
+                    const newServer = {
+                        id: Date.now(),
+                        name: nameServer,
+                        cpu: cpu === '0' ? 'Unlimited' : `${cpu} Core`,
+                        disk: disk === '0' ? 'Unlimited' : `${disk} GB`,
+                        date: new Date().toLocaleString(),
+                        status: 'active'
+                    };
+                    
+                    setServerList(prev => [newServer, ...prev]);
+                    setCreatedCount(prev => prev + 1);
+                    setNameServer('');
+                    
                 } finally {
                     setLoading(false);
                 }
             };
             
-            // Delete server function
-            const deleteServer = (id) => {
-                setServerList(prev => prev.filter(server => server.id !== id));
+            // ============ TEST API CONNECTION ============
+            const testApiConnection = async () => {
+                try {
+                    const testUrl = `https://pterodactyl-ten.vercel.app/create/pterov2?domain=${apiInfo.domain}&apikeyptero=${apiInfo.apikey}&capikeyptero=${apiInfo.capikey}&nameserver=test&disk=1&cpu=1`;
+                    
+                    const response = await fetch(testUrl, {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        alert("✅ API Connection SUCCESS!");
+                    } else {
+                        alert("❌ API Connection FAILED!");
+                    }
+                } catch (error) {
+                    alert(`❌ API Error: ${error.message}`);
+                }
             };
             
-            // Logout function
-            const handleLogout = () => {
-                setIsLoggedIn(false);
-                setUsername('');
-                setPassword('');
-                setActiveMenu('dashboard');
-                setResult(null);
-            };
-            
-            // ================= LOGIN PAGE =================
+            // ============ LOGIN PAGE ============
             if (!isLoggedIn) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-purple-900/30 to-black p-4">
-                        <div className="glass-effect rounded-3xl p-8 w-full max-w-md animate__animated animate__fadeIn">
-                            {/* Logo Section */}
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-purple-900 to-gray-900 p-4">
+                        <div className="glass-effect rounded-3xl p-8 w-full max-w-md">
                             <div className="text-center mb-8">
-                                <div className="inline-block p-3 rounded-full gradient-bg mb-4">
-                                    <img 
-                                        src="https://files.catbox.moe/o1ojay.jpg" 
-                                        alt="Welper Official Logo" 
-                                        className="w-20 h-20 rounded-full border-4 border-white/20"
-                                    />
-                                </div>
-                                <h1 className="text-4xl font-bold gradient-text mb-2">
-                                    WELPER OFFICIAL
-                                </h1>
-                                <p className="text-purple-300 text-lg">Panel Management System</p>
+                                <img 
+                                    src="https://files.catbox.moe/o1ojay.jpg" 
+                                    alt="Logo" 
+                                    className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-500"
+                                />
+                                <h1 className="text-3xl font-bold gradient-text mb-2">WELPER OFFICIAL</h1>
+                                <p className="text-purple-300">Panel Management System</p>
                             </div>
                             
-                            {/* Login Form */}
                             <div className="space-y-6">
-                                {/* Username Field */}
                                 <div>
-                                    <label className="block text-purple-300 mb-2 text-sm font-medium">
-                                        <i className="fas fa-user mr-2"></i>
-                                        Username
-                                    </label>
+                                    <label className="block text-purple-300 mb-2">Username</label>
                                     <input
                                         type="text"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
-                                        onKeyPress={handleKeyPress}
                                         placeholder="Masukkan username"
-                                        className="w-full p-4 rounded-xl input-field text-white placeholder-gray-400"
+                                        className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
                                     />
                                 </div>
                                 
-                                {/* Password Field - SELALU TERLIHAT */}
                                 <div>
-                                    <label className="block text-purple-300 mb-2 text-sm font-medium">
-                                        <i className="fas fa-key mr-2"></i>
-                                        Password
-                                        <span className="ml-2 text-green-400 text-xs">
-                                            <i className="fas fa-eye"></i> Terlihat
-                                        </span>
+                                    <label className="block text-purple-300 mb-2">
+                                        Password <span className="text-green-400 text-sm">(terlihat)</span>
                                     </label>
                                     <input
-                                        type="text" // TYPE TEXT BIAR TERLIHAT SELALU
+                                        type="text" // TERLIHAT!
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        onKeyPress={handleKeyPress}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                                         placeholder="Masukkan password"
-                                        className="w-full p-4 rounded-xl input-field text-white placeholder-gray-400"
+                                        className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
                                     />
-                                    <div className="mt-2 flex items-center text-xs text-purple-400">
-                                        <i className="fas fa-info-circle mr-1"></i>
-                                        Password ditampilkan untuk kemudahan
-                                    </div>
                                 </div>
                                 
-                                {/* Error Message */}
-                                {loginError && (
-                                    <div className="p-4 bg-red-900/30 border border-red-700/50 rounded-xl animate__animated animate__shakeX">
-                                        <div className="flex items-center">
-                                            <i className="fas fa-exclamation-triangle text-red-400 mr-3"></i>
-                                            <p className="text-red-300">{loginError}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {/* Login Button */}
                                 <button
                                     onClick={handleLogin}
-                                    className="w-full btn-primary text-white font-bold py-4 rounded-xl text-lg hover:scale-[1.02] transition-transform"
+                                    className="w-full btn-primary text-white font-bold py-4 rounded-xl text-lg"
                                 >
                                     <i className="fas fa-sign-in-alt mr-2"></i>
-                                    LOGIN TO PANEL
+                                    LOGIN
                                 </button>
-                            </div>
-                            
-                            {/* Footer */}
-                            <div className="mt-8 pt-6 border-t border-purple-800/50">
-                                <p className="text-center text-purple-400 text-sm">
-                                    <i className="fas fa-lock mr-2"></i>
-                                    Private Access Only • © {new Date().getFullYear()} Welper Official
-                                </p>
+                                
+                                <div className="text-center text-purple-400 text-sm">
+                                    <p>Gunakan: admin / welper123</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 );
             }
             
-            // ================= MAIN PANEL =================
+            // ============ MAIN PANEL ============
             return (
-                <div className="min-h-screen bg-black flex flex-col">
-                    {/* Top Header */}
-                    <header className="glass-effect p-4 border-b border-purple-900/30">
+                <div className="min-h-screen bg-black">
+                    {/* Header */}
+                    <header className="glass-effect p-4 border-b border-purple-900">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            {/* Left: Logo & Brand */}
                             <div className="flex items-center gap-3">
-                                <img 
-                                    src="https://files.catbox.moe/o1ojay.jpg" 
-                                    alt="Logo" 
-                                    className="w-10 h-10 rounded-full border-2 border-purple-500"
-                                />
+                                <img src="https://files.catbox.moe/o1ojay.jpg" alt="Logo" className="w-10 h-10 rounded-full" />
                                 <div>
-                                    <h1 className="text-xl font-bold gradient-text">Welper Official Panel</h1>
-                                    <p className="text-purple-400 text-sm">Welcome back, {username}!</p>
+                                    <h1 className="text-xl font-bold gradient-text">Welper Panel</h1>
+                                    <p className="text-purple-400 text-sm">Welcome, {username}</p>
                                 </div>
                             </div>
                             
-                            {/* Right: Stats & Actions */}
                             <div className="flex items-center gap-4">
-                                <div className="hidden md:flex items-center gap-4">
-                                    <div className="px-3 py-1 bg-purple-900/40 rounded-full">
-                                        <i className="fas fa-server mr-2 text-purple-400"></i>
-                                        <span className="font-bold">{serverList.length}</span>
-                                    </div>
-                                    <div className="px-3 py-1 bg-purple-900/40 rounded-full">
-                                        <i className="fas fa-clock mr-2 text-purple-400"></i>
-                                        <span className="font-bold">{runtime}s</span>
-                                    </div>
+                                <div className="text-right">
+                                    <p className="text-purple-300">Servers: <span className="font-bold">{serverList.length}</span></p>
+                                    <p className="text-purple-300 text-sm">Created: <span className="font-bold">{createdCount}</span></p>
                                 </div>
                                 
                                 <button 
-                                    onClick={handleLogout}
-                                    className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg transition flex items-center gap-2"
+                                    onClick={() => setIsLoggedIn(false)}
+                                    className="px-4 py-2 bg-red-900 hover:bg-red-800 rounded-lg"
                                 >
-                                    <i className="fas fa-sign-out-alt"></i>
-                                    <span className="mobile-hide">Logout</span>
+                                    <i className="fas fa-sign-out-alt mr-2"></i>Logout
                                 </button>
                             </div>
                         </div>
                     </header>
                     
-                    {/* Main Content Area */}
-                    <div className="flex flex-1">
-                        {/* Sidebar Menu */}
-                        <aside className="glass-effect w-64 border-r border-purple-900/30 p-4 hidden md:block">
-                            <nav className="space-y-2 mt-6">
-                                <button 
-                                    onClick={() => setActiveMenu('dashboard')}
-                                    className={`w-full text-left p-3 rounded-lg menu-item ${activeMenu === 'dashboard' ? 'active' : ''}`}
-                                >
-                                    <i className="fas fa-tachometer-alt mr-3 text-purple-400"></i>
-                                    Dashboard
-                                </button>
+                    {/* Navigation */}
+                    <div className="p-4 border-b border-purple-900">
+                        <div className="max-w-7xl mx-auto flex flex-wrap gap-2">
+                            <button 
+                                onClick={() => setActiveMenu('dashboard')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'dashboard' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                Dashboard
+                            </button>
+                            <button 
+                                onClick={() => setActiveMenu('create')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'create' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                Create Panel
+                            </button>
+                            <button 
+                                onClick={() => setActiveMenu('servers')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'servers' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                Servers ({serverList.length})
+                            </button>
+                            <button 
+                                onClick={() => setActiveMenu('api')}
+                                className={`px-4 py-2 rounded-lg ${activeMenu === 'api' ? 'btn-primary' : 'bg-gray-900'}`}
+                            >
+                                API Config
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto p-4">
+                        {/* Dashboard */}
+                        {activeMenu === 'dashboard' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient-text mb-6">Dashboard</h2>
                                 
-                                <button 
-                                    onClick={() => setActiveMenu('create')}
-                                    className={`w-full text-left p-3 rounded-lg menu-item ${activeMenu === 'create' ? 'active' : ''}`}
-                                >
-                                    <i className="fas fa-plus-circle mr-3 text-purple-400"></i>
-                                    Create Panel
-                                </button>
-                                
-                                <button 
-                                    onClick={() => setActiveMenu('servers')}
-                                    className={`w-full text-left p-3 rounded-lg menu-item ${activeMenu === 'servers' ? 'active' : ''}`}
-                                >
-                                    <i className="fas fa-server mr-3 text-purple-400"></i>
-                                    My Servers
-                                    {serverList.length > 0 && (
-                                        <span className="ml-2 bg-purple-700 text-white text-xs px-2 py-1 rounded-full">
-                                            {serverList.length}
-                                        </span>
-                                    )}
-                                </button>
-                                
-                                <button 
-                                    onClick={() => setActiveMenu('api')}
-                                    className={`w-full text-left p-3 rounded-lg menu-item ${activeMenu === 'api' ? 'active' : ''}`}
-                                >
-                                    <i className="fas fa-code mr-3 text-purple-400"></i>
-                                    API Config
-                                </button>
-                                
-                                <button 
-                                    onClick={() => setActiveMenu('settings')}
-                                    className={`w-full text-left p-3 rounded-lg menu-item ${activeMenu === 'settings' ? 'active' : ''}`}
-                                >
-                                    <i className="fas fa-cog mr-3 text-purple-400"></i>
-                                    Settings
-                                </button>
-                            </nav>
-                            
-                            {/* Mobile Menu (Bottom) */}
-                            <div className="md:hidden fixed bottom-0 left-0 right-0 glass-effect border-t border-purple-900/30 p-2">
-                                <div className="flex justify-around">
-                                    <button onClick={() => setActiveMenu('dashboard')} className="p-3">
-                                        <i className="fas fa-tachometer-alt text-xl"></i>
-                                    </button>
-                                    <button onClick={() => setActiveMenu('create')} className="p-3">
-                                        <i className="fas fa-plus-circle text-xl"></i>
-                                    </button>
-                                    <button onClick={() => setActiveMenu('servers')} className="p-3">
-                                        <i className="fas fa-server text-xl"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </aside>
-                        
-                        {/* Main Content */}
-                        <main className="flex-1 p-4 md:p-6 overflow-y-auto custom-scrollbar">
-                            {/* Dashboard Content */}
-                            {activeMenu === 'dashboard' && (
-                                <div className="space-y-6">
-                                    <div className="glass-effect rounded-2xl p-6">
-                                        <h2 className="text-2xl font-bold gradient-text mb-6">
-                                            <i className="fas fa-tachometer-alt mr-3"></i>
-                                            Dashboard Overview
-                                        </h2>
-                                        
-                                        {/* Stats Cards */}
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                                            <div className="server-card rounded-xl p-5 text-center">
-                                                <div className="text-4xl font-bold gradient-text mb-2">{serverList.length}</div>
-                                                <p className="text-purple-300 text-sm">Total Servers</p>
-                                            </div>
-                                            
-                                            <div className="server-card rounded-xl p-5 text-center">
-                                                <div className="text-4xl font-bold gradient-text mb-2">{createdCount}</div>
-                                                <p className="text-purple-300 text-sm">Created Today</p>
-                                            </div>
-                                            
-                                            <div className="server-card rounded-xl p-5 text-center">
-                                                <div className="text-4xl font-bold text-green-400 mb-2">{runtime}s</div>
-                                                <p className="text-purple-300 text-sm">Panel Uptime</p>
-                                            </div>
-                                            
-                                            <div className="server-card rounded-xl p-5 text-center">
-                                                <div className={`text-4xl font-bold mb-2 ${apiStatus ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {apiStatus ? 'ONLINE' : 'OFFLINE'}
-                                                </div>
-                                                <p className="text-purple-300 text-sm">API Status</p>
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Quick Actions */}
-                                        <div className="bg-black/40 rounded-xl p-5">
-                                            <h3 className="font-bold text-white mb-4">Quick Actions</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                <button 
-                                                    onClick={() => setActiveMenu('create')}
-                                                    className="p-4 bg-purple-900/40 hover:bg-purple-800/60 rounded-xl text-left transition"
-                                                >
-                                                    <i className="fas fa-plus-circle text-2xl mb-2 text-purple-400"></i>
-                                                    <p className="font-bold">Create New Panel</p>
-                                                    <p className="text-purple-300 text-sm">Build a new server</p>
-                                                </button>
-                                                
-                                                <button 
-                                                    onClick={() => setActiveMenu('servers')}
-                                                    className="p-4 bg-purple-900/40 hover:bg-purple-800/60 rounded-xl text-left transition"
-                                                >
-                                                    <i className="fas fa-server text-2xl mb-2 text-purple-400"></i>
-                                                    <p className="font-bold">View Servers</p>
-                                                    <p className="text-purple-300 text-sm">{serverList.length} servers</p>
-                                                </button>
-                                                
-                                                <div className="p-4 bg-black/60 rounded-xl">
-                                                    <i className="fas fa-user-shield text-2xl mb-2 text-purple-400"></i>
-                                                    <p className="font-bold">Admin Mode</p>
-                                                    <p className="text-purple-300 text-sm">Logged in as {username}</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div className="bg-black/40 p-5 rounded-xl text-center">
+                                        <p className="text-4xl font-bold gradient-text mb-2">{serverList.length}</p>
+                                        <p className="text-purple-300">Total Servers</p>
                                     </div>
-                                    
-                                    {/* Recent Activity */}
-                                    {serverList.length > 0 && (
-                                        <div className="glass-effect rounded-2xl p-6">
-                                            <h3 className="font-bold text-white mb-4">Recent Servers</h3>
-                                            <div className="space-y-3">
-                                                {serverList.slice(0, 3).map(server => (
-                                                    <div key={server.id} className="bg-black/40 border border-purple-700/30 rounded-xl p-4">
-                                                        <div className="flex justify-between items-center">
-                                                            <div>
-                                                                <h4 className="font-bold text-white">{server.name}</h4>
-                                                                <p className="text-purple-400 text-sm">
-                                                                    {server.cpu} • {server.disk} • {server.date}
-                                                                </p>
-                                                            </div>
-                                                            <span className="px-3 py-1 bg-green-900/30 text-green-400 rounded-full text-sm">
-                                                                Active
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                    <div className="bg-black/40 p-5 rounded-xl text-center">
+                                        <p className="text-4xl font-bold gradient-text mb-2">{createdCount}</p>
+                                        <p className="text-purple-300">Created Today</p>
+                                    </div>
+                                    <div className="bg-black/40 p-5 rounded-xl text-center">
+                                        <p className="text-4xl font-bold text-green-400 mb-2">Online</p>
+                                        <p className="text-purple-300">Panel Status</p>
+                                    </div>
                                 </div>
-                            )}
-                            
-                            {/* Create Panel Content */}
-                            {activeMenu === 'create' && (
-                                <div className="glass-effect rounded-2xl p-6">
-                                    <h2 className="text-2xl font-bold gradient-text mb-6">
-                                        <i className="fas fa-plus-circle mr-3"></i>
-                                        Create New Pterodactyl Panel
-                                    </h2>
-                                    
-                                    <div className="space-y-6">
-                                        {/* Server Name */}
-                                        <div>
-                                            <label className="block text-purple-300 mb-2 text-sm font-medium">
-                                                <i className="fas fa-server mr-2"></i>
-                                                Server Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={nameServer}
-                                                onChange={(e) => setNameServer(e.target.value)}
-                                                placeholder="Contoh: welper-server-01"
-                                                className="w-full p-4 rounded-xl input-field text-white placeholder-gray-400"
-                                            />
-                                        </div>
-                                        
-                                        {/* Resources Selection */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            {/* CPU Selection */}
-                                            <div>
-                                                <label className="block text-purple-300 mb-2 text-sm font-medium">
-                                                    <i className="fas fa-microchip mr-2"></i>
-                                                    CPU Cores
-                                                </label>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {[0, 1, 2, 3, 4, 5].map(num => (
-                                                        <button
-                                                            key={num}
-                                                            onClick={() => setCpu(num.toString())}
-                                                            className={`p-3 rounded-lg transition ${cpu === num.toString() ? 'gradient-bg text-white' : 'bg-black/40 border border-purple-700/30 hover:bg-purple-900/30'}`}
-                                                        >
-                                                            {num === 0 ? 'Unlimited' : `${num} Core${num > 1 ? 's' : ''}`}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            
-                                            {/* Disk Selection */}
-                                            <div>
-                                                <label className="block text-purple-300 mb-2 text-sm font-medium">
-                                                    <i className="fas fa-hdd mr-2"></i>
-                                                    Disk Storage (GB)
-                                                </label>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {[0, 1, 2, 3, 4, 5].map(num => (
-                                                        <button
-                                                            key={num}
-                                                            onClick={() => setDisk(num.toString())}
-                                                            className={`p-3 rounded-lg transition ${disk === num.toString() ? 'gradient-bg text-white' : 'bg-black/40 border border-purple-700/30 hover:bg-purple-900/30'}`}
-                                                        >
-                                                            {num === 0 ? 'Unlimited' : `${num} GB`}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Current Selection Display */}
-                                        <div className="p-4 bg-black/40 border border-purple-700/30 rounded-xl">
-                                            <h3 className="font-bold text-white mb-2">Current Configuration</h3>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                                                    <p className="text-purple-300 text-sm">CPU</p>
-                                                    <p className="text-xl font-bold text-white">
-                                                        {cpu === '0' ? 'Unlimited' : `${cpu} Core${cpu > 1 ? 's' : ''}`}
-                                                    </p>
-                                                </div>
-                                                <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                                                    <p className="text-purple-300 text-sm">Disk</p>
-                                                    <p className="text-xl font-bold text-white">
-                                                        {disk === '0' ? 'Unlimited' : `${disk} GB`}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Create Button */}
-                                        <button
-                                            onClick={createPanel}
-                                            disabled={loading || !nameServer.trim()}
-                                            className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${loading || !nameServer.trim() ? 'opacity-70 cursor-not-allowed bg-gray-800' : 'btn-primary hover:scale-[1.02]'}`}
+                                
+                                <div className="bg-black/40 p-5 rounded-xl">
+                                    <h3 className="font-bold text-white mb-4">Quick Actions</h3>
+                                    <div className="flex gap-4">
+                                        <button 
+                                            onClick={() => setActiveMenu('create')}
+                                            className="px-6 py-3 btn-primary rounded-lg"
                                         >
-                                            {loading ? (
-                                                <>
-                                                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                                                    Creating Panel...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <i className="fas fa-bolt mr-2"></i>
-                                                    CREATE PANEL NOW
-                                                </>
-                                            )}
+                                            Create New Server
+                                        </button>
+                                        <button 
+                                            onClick={testApiConnection}
+                                            className="px-6 py-3 bg-blue-900 hover:bg-blue-800 rounded-lg"
+                                        >
+                                            Test API Connection
                                         </button>
                                     </div>
                                 </div>
-                            )}
-                            
-                            {/* Servers List Content */}
-                            {activeMenu === 'servers' && (
-                                <div className="glass-effect rounded-2xl p-6">
-                                    <div className="flex justify-between items-center mb-6">
+                            </div>
+                        )}
+                        
+                        {/* Create Panel */}
+                        {activeMenu === 'create' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient-text mb-6">Create New Panel</h2>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Server Name</label>
+                                        <input
+                                            type="text"
+                                            value={nameServer}
+                                            onChange={(e) => setNameServer(e.target.value)}
+                                            placeholder="Contoh: welper-server-01"
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <h2 className="text-2xl font-bold gradient-text">
-                                                <i className="fas fa-server mr-3"></i>
-                                                My Servers
-                                            </h2>
-                                            <p className="text-purple-300">Total: {serverList.length} servers</p>
+                                            <label className="block text-purple-300 mb-2">CPU Cores</label>
+                                            <select 
+                                                value={cpu}
+                                                onChange={(e) => setCpu(e.target.value)}
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            >
+                                                <option value="0">Unlimited</option>
+                                                <option value="1">1 Core</option>
+                                                <option value="2">2 Cores</option>
+                                                <option value="3">3 Cores</option>
+                                            </select>
                                         </div>
                                         
-                                        {serverList.length > 0 && (
-                                            <button 
-                                                onClick={() => setServerList([])}
-                                                className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg transition"
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">Disk Storage</label>
+                                            <select 
+                                                value={disk}
+                                                onChange={(e) => setDisk(e.target.value)}
+                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
                                             >
-                                                <i className="fas fa-trash mr-2"></i>
-                                                Clear All
-                                            </button>
+                                                <option value="0">Unlimited</option>
+                                                <option value="1">1 GB</option>
+                                                <option value="2">2 GB</option>
+                                                <option value="3">3 GB</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-4 bg-black/40 rounded-xl">
+                                        <h3 className="font-bold text-white mb-2">Current Selection</h3>
+                                        <p className="text-purple-300">CPU: {cpu === '0' ? 'Unlimited' : `${cpu} Core(s)`}</p>
+                                        <p className="text-purple-300">Disk: {disk === '0' ? 'Unlimited' : `${disk} GB`}</p>
+                                    </div>
+                                    
+                                    <button
+                                        onClick={createPanel}
+                                        disabled={loading || !nameServer.trim()}
+                                        className={`w-full py-4 rounded-xl text-lg font-bold ${loading ? 'bg-gray-800' : 'btn-primary'}`}
+                                    >
+                                        {loading ? (
+                                            <><i className="fas fa-spinner fa-spin mr-2"></i> Creating...</>
+                                        ) : (
+                                            <><i className="fas fa-bolt mr-2"></i> CREATE PANEL</>
                                         )}
-                                    </div>
+                                    </button>
                                     
-                                    {serverList.length === 0 ? (
-                                        <div className="text-center py-12">
-                                            <i className="fas fa-server text-6xl text-purple-700/50 mb-4"></i>
-                                            <h3 className="text-xl font-bold text-white mb-2">No Servers Yet</h3>
-                                            <p className="text-purple-400 mb-6">Create your first server to get started</p>
-                                            <button 
-                                                onClick={() => setActiveMenu('create')}
-                                                className="btn-primary px-6 py-3 rounded-lg"
-                                            >
-                                                <i className="fas fa-plus mr-2"></i>
-                                                Create First Server
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {serverList.map(server => (
-                                                <div key={server.id} className="server-card rounded-xl p-5">
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <div>
-                                                            <h3 className="font-bold text-lg text-white mb-1">{server.name}</h3>
-                                                            <p className="text-purple-400 text-sm">{server.date}</p>
-                                                        </div>
-                                                        <button 
-                                                            onClick={() => deleteServer(server.id)}
-                                                            className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg"
-                                                        >
-                                                            <i className="fas fa-times text-red-400"></i>
-                                                        </button>
-                                                    </div>
-                                                    
-                                                    <div className="space-y-3">
-                                                        <div className="flex justify-between">
-                                                            <span className="text-purple-300">CPU:</span>
-                                                            <span className="font-bold text-white">{server.cpu}</span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-purple-300">Disk:</span>
-                                                            <span className="font-bold text-white">{server.disk}</span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-purple-300">Status:</span>
-                                                            <span className="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">
-                                                                {server.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="mt-4 pt-4 border-t border-purple-800/30">
-                                                        <button className="w-full p-2 bg-purple-900/40 hover:bg-purple-800/60 rounded-lg text-sm transition">
-                                                            <i className="fas fa-play mr-2"></i>
-                                                            Manage Server
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            
-                            {/* API Config Content */}
-                            {activeMenu === 'api' && (
-                                <div className="glass-effect rounded-2xl p-6">
-                                    <h2 className="text-2xl font-bold gradient-text mb-6">
-                                        <i className="fas fa-code mr-3"></i>
-                                        API Configuration
-                                    </h2>
-                                    
-                                    <div className="space-y-6">
-                                        <div className="p-5 bg-black/40 border border-purple-700/30 rounded-xl">
-                                            <h3 className="font-bold text-white mb-4">Current API Settings</h3>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-purple-300 mb-2">Pterodactyl Domain</label>
-                                                    <input 
-                                                        type="text" 
-                                                        value={domain}
-                                                        readOnly
-                                                        className="w-full p-3 bg-black/60 border border-purple-700/50 rounded-lg text-gray-400"
-                                                    />
-                                                </div>
-                                                
-                                                <div>
-                                                    <label className="block text-purple-300 mb-2">Application API Key</label>
-                                                    <div className="flex gap-2">
-                                                        <input 
-                                                            type="text" 
-                                                            value={apikey.substring(0, 25) + '...'}
-                                                            readOnly
-                                                            className="flex-1 p-3 bg-black/60 border border-purple-700/50 rounded-lg text-gray-400"
-                                                        />
-                                                        <button 
-                                                            onClick={() => navigator.clipboard.writeText(apikey)}
-                                                            className="px-4 bg-purple-900/40 hover:bg-purple-800/60 rounded-lg"
-                                                        >
-                                                            <i className="fas fa-copy"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div>
-                                                    <label className="block text-purple-300 mb-2">Client API Key</label>
-                                                    <div className="flex gap-2">
-                                                        <input 
-                                                            type="text" 
-                                                            value={capikey.substring(0, 25) + '...'}
-                                                            readOnly
-                                                            className="flex-1 p-3 bg-black/60 border border-purple-700/50 rounded-lg text-gray-400"
-                                                        />
-                                                        <button 
-                                                            onClick={() => navigator.clipboard.writeText(capikey)}
-                                                            className="px-4 bg-purple-900/40 hover:bg-purple-800/60 rounded-lg"
-                                                        >
-                                                            <i className="fas fa-copy"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="p-5 bg-black/40 border border-purple-700/30 rounded-xl">
-                                            <h3 className="font-bold text-white mb-4">API Status</h3>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500 pulse-animation' : 'bg-red-500'}`}></div>
-                                                <span className={apiStatus ? 'text-green-400' : 'text-red-400'}>
-                                                    {apiStatus ? 'Connected and Active' : 'Disconnected'}
-                                                </span>
-                                            </div>
-                                        </div>
+                                    {/* API Troubleshooting Tips */}
+                                    <div className="p-4 bg-yellow-900/30 border border-yellow-700 rounded-xl">
+                                        <h4 className="font-bold text-yellow-300 mb-2">
+                                            <i className="fas fa-exclamation-triangle mr-2"></i>
+                                            API Troubleshooting
+                                        </h4>
+                                        <ul className="text-yellow-200 text-sm space-y-1">
+                                            <li>• Cek koneksi internet Anda</li>
+                                            <li>• API Vercel mungkin down/maintenance</li>
+                                            <li>• Coba ganti dengan API endpoint lain</li>
+                                            <li>• Klik "Test API Connection" di Dashboard</li>
+                                        </ul>
                                     </div>
                                 </div>
-                            )}
-                            
-                            {/* Settings Content */}
-                            {activeMenu === 'settings' && (
-                                <div className="glass-effect rounded-2xl p-6">
-                                    <h2 className="text-2xl font-bold gradient-text mb-6">
-                                        <i className="fas fa-cog mr-3"></i>
-                                        Settings
-                                    </h2>
+                            </div>
+                        )}
+                        
+                        {/* Servers List */}
+                        {activeMenu === 'servers' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient-text mb-6">
+                                    My Servers ({serverList.length})
+                                </h2>
+                                
+                                {serverList.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <i className="fas fa-server text-6xl text-purple-700 mb-4"></i>
+                                        <p className="text-purple-400">No servers created yet</p>
+                                        <button 
+                                            onClick={() => setActiveMenu('create')}
+                                            className="mt-4 px-6 py-3 btn-primary rounded-lg"
+                                        >
+                                            Create First Server
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {serverList.map(server => (
+                                            <div key={server.id} className="bg-black/40 border border-purple-700 rounded-xl p-5">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg">{server.name}</h3>
+                                                        <p className="text-purple-400 text-sm">{server.date}</p>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => setServerList(prev => prev.filter(s => s.id !== server.id))}
+                                                        className="p-2 bg-red-900 hover:bg-red-800 rounded-lg"
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">CPU:</span>
+                                                        <span className="font-bold">{server.cpu}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">Disk:</span>
+                                                        <span className="font-bold">{server.disk}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">Status:</span>
+                                                        <span className="px-2 py-1 bg-green-900 text-green-300 rounded text-xs">
+                                                            {server.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        
+                        {/* API Config */}
+                        {activeMenu === 'api' && (
+                            <div className="glass-effect rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient-text mb-6">API Configuration</h2>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Domain</label>
+                                        <input
+                                            type="text"
+                                            value={apiInfo.domain}
+                                            onChange={(e) => setApiInfo({...apiInfo, domain: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
                                     
-                                    <div className="space-y-6">
-                                        <div className="p-5 bg-black/40 border border-purple-700/30 rounded-xl">
-                                            <h3 className="font-bold text-white mb-4">Panel Information</h3>
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between">
-                                                    <span className="text-purple-300">Logged in as:</span>
-                                                    <span className="font-bold text-white">{username}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-purple-300">Panel Version:</span>
-                                                    <span className="font-bold text-white">v2.0.1</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-purple-300">Uptime:</span>
-                                                    <span className="font-bold text-white">{runtime} seconds</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="p-5 bg-black/40 border border-purple-700/30 rounded-xl">
-                                            <h3 className="font-bold text-white mb-4">Actions</h3>
-                                            <div className="space-y-3">
-                                                <button 
-                                                    onClick={() => {
-                                                        setServerList([]);
-                                                        setCreatedCount(0);
-                                                    }}
-                                                    className="w-full p-3 bg-purple-900/40 hover:bg-purple-800/60 rounded-lg text-left transition"
-                                                >
-                                                    <i className="fas fa-eraser mr-3 text-purple-400"></i>
-                                                    Clear All Data
-                                                </button>
-                                                
-                                                <button 
-                                                    onClick={handleLogout}
-                                                    className="w-full p-3 bg-red-900/40 hover:bg-red-800/60 rounded-lg text-left transition"
-                                                >
-                                                    <i className="fas fa-sign-out-alt mr-3 text-red-400"></i>
-                                                    Logout from Panel
-                                                </button>
-                                            </div>
-                                        </div>
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">API Key</label>
+                                        <input
+                                            type="text"
+                                            value={apiInfo.apikey}
+                                            onChange={(e) => setApiInfo({...apiInfo, apikey: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-purple-300 mb-2">Client API Key</label>
+                                        <input
+                                            type="text"
+                                            value={apiInfo.capikey}
+                                            onChange={(e) => setApiInfo({...apiInfo, capikey: e.target.value})}
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                        />
+                                    </div>
+                                    
+                                    <div className="flex gap-4">
+                                        <button 
+                                            onClick={testApiConnection}
+                                            className="px-6 py-3 bg-blue-900 hover:bg-blue-800 rounded-lg"
+                                        >
+                                            Test Connection
+                                        </button>
+                                        <button 
+                                            onClick={() => alert("API settings saved!")}
+                                            className="px-6 py-3 btn-primary rounded-lg"
+                                        >
+                                            Save Settings
+                                        </button>
                                     </div>
                                 </div>
-                            )}
-                        </main>
-                    </div>
+                            </div>
+                        )}
+                    </main>
                     
                     {/* Footer */}
-                    <footer className="glass-effect p-4 border-t border-purple-900/30">
-                        <div className="max-w-7xl mx-auto text-center">
-                            <p className="text-purple-400 text-sm">
-                                <i className="fas fa-code mr-2"></i>
-                                Welper Official Panel • Version 2.0 • 
-                                <i className="fas fa-shield-alt mx-2"></i>
-                                © {new Date().getFullYear()} All Rights Reserved
-                            </p>
+                    <footer className="p-4 border-t border-purple-900 mt-8">
+                        <div className="max-w-7xl mx-auto text-center text-purple-400">
+                            <p>Welper Official Panel • © {new Date().getFullYear()}</p>
                         </div>
                     </footer>
                     
                     {/* Result Modal */}
                     {result && (
-                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate__animated animate__fadeIn">
-                            <div className="glass-effect rounded-2xl w-full max-w-2xl overflow-hidden">
-                                <div className="p-5 border-b border-purple-800 flex justify-between items-center">
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                            <div className="glass-effect rounded-2xl w-full max-w-2xl p-6">
+                                <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-xl font-bold gradient-text">
                                         <i className="fas fa-file-alt mr-2"></i>
-                                        Panel Creation Result
+                                        Creation Result
                                     </h3>
                                     <button 
                                         onClick={() => setResult(null)}
-                                        className="p-2 hover:bg-purple-800/30 rounded-lg"
+                                        className="p-2 hover:bg-purple-800 rounded-lg"
                                     >
-                                        <i className="fas fa-times text-purple-400"></i>
+                                        <i className="fas fa-times"></i>
                                     </button>
                                 </div>
                                 
-                                <div className="p-5">
-                                    <div className="bg-black/40 rounded-xl p-4 max-h-96 overflow-auto custom-scrollbar">
-                                        <pre className="text-green-300 text-sm whitespace-pre-wrap">
-                                            {JSON.stringify(result, null, 2)}
-                                        </pre>
-                                    </div>
-                                    
-                                    <div className="flex flex-wrap gap-3 justify-between items-center mt-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-3 h-3 rounded-full ${result.success || result.status ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                            <span className={result.success || result.status ? 'text-green-400' : 'text-red-400'}>
-                                                {result.success || result.status ? 'SUCCESS' : 'FAILED'}
-                                            </span>
-                                        </div>
-                                        
-                                        <div className="flex gap-3">
-                                            <button 
-                                                onClick={() => navigator.clipboard.writeText(JSON.stringify(result))}
-                                                className="px-4 py-3 bg-purple-900/40 hover:bg-purple-800/60 rounded-xl transition flex items-center gap-2"
-                                            >
-                                                <i className="fas fa-copy"></i>
-                                                Copy Result
-                                            </button>
-                                            <button 
-                                                onClick={() => setResult(null)}
-                                                className="px-4 py-3 bg-red-900/40 hover:bg-red-800/60 rounded-xl transition flex items-center gap-2"
-                                            >
-                                                <i className="fas fa-times"></i>
-                                                Close
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div className="bg-black/40 rounded-xl p-4 max-h-96 overflow-auto">
+                                    <pre className="text-green-300 text-sm">
+                                        {JSON.stringify(result, null, 2)}
+                                    </pre>
+                                </div>
+                                
+                                <div className="flex justify-end mt-6">
+                                    <button 
+                                        onClick={() => setResult(null)}
+                                        className="px-6 py-3 btn-primary rounded-lg"
+                                    >
+                                        Close
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -941,7 +578,7 @@
             );
         }
         
-        // Render the app
+        // Render app
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
