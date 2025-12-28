@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPanel Welper - Panel Management System</title>
+    <title>CPanel Welper - AUTO LOGIN</title>
     <!-- Load React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -15,15 +15,16 @@
     
     <style>
         body {
-            background: #0a0a0a;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0b2e 50%, #0a0a0a 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
             margin: 0;
             padding: 0;
         }
         .glass-effect {
-            background: rgba(88, 28, 135, 0.2);
+            background: rgba(88, 28, 135, 0.25);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(168, 85, 247, 0.3);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
         .gradient-text {
             background: linear-gradient(90deg, #8b5cf6, #a855f7, #ec4899);
@@ -40,7 +41,20 @@
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.5);
+        }
+        .glow-effect {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+        }
+        .input-field {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+            outline: none;
         }
     </style>
 </head>
@@ -52,107 +66,250 @@
         
         // Main App Component
         function App() {
+            // ============ AUTO LOGIN - NO LOGIN PAGE ============
+            // Langsung masuk ke panel tanpa login
+            const [isLoggedIn] = useState(true); // Selalu true
+            
             // ============ CONFIGURATION STATE ============
             const [config, setConfig] = useState({
                 panelDomain: "https://9.welperoffcial.my.id",
                 apiKey: "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC",
                 clientApiKey: "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5",
                 defaultPassword: "Weleprtzy8#13",
-                defaultEggId: "1" // Ganti dengan ID egg "wa" Anda di panel
+                defaultEmailDomain: "@welper.my.id",
+                defaultEggId: "5" // GANTI DENGAN ID EGG WA ANDA
             });
-            
-            // ============ LOGIN STATE ============
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [username, setUsername] = useState('');
-            const [password, setPassword] = useState('');
-            
-            // Simple login handler
-            const handleLogin = () => {
-                if (username === "welper" && password === "admin123") {
-                    setIsLoggedIn(true);
-                } else {
-                    alert("Gunakan:\nUsername: welper\nPassword: admin123");
-                }
-            };
             
             // ============ PANEL CREATION STATE ============
             const [activeMenu, setActiveMenu] = useState('create');
-            const [panelName, setPanelName] = useState('');
-            const [panelUsername, setPanelUsername] = useState('');
-            const [panelPassword, setPanelPassword] = useState(config.defaultPassword);
-            const [ram, setRam] = useState('1');
-            const [disk, setDisk] = useState('10');
-            const [cpu, setCpu] = useState('100');
+            const [panelData, setPanelData] = useState({
+                name: '',
+                username: '',
+                email: '',
+                password: config.defaultPassword,
+                ram: '1',
+                disk: '10',
+                cpu: '100',
+                nodeId: '1',
+                locationId: '1'
+            });
             
             const [creationResult, setCreationResult] = useState(null);
             const [createdPanels, setCreatedPanels] = useState([]);
             const [totalCreated, setTotalCreated] = useState(0);
+            const [loading, setLoading] = useState(false);
+            const [apiStatus, setApiStatus] = useState('checking');
             
-            // ============ CREATE PANEL FUNCTION ============
-            const createPanel = async () => {
-                if (!panelName.trim() || !panelUsername.trim()) {
+            // ============ CHECK API STATUS ============
+            useEffect(() => {
+                checkApiStatus();
+            }, []);
+            
+            const checkApiStatus = async () => {
+                try {
+                    const response = await fetch(`${config.panelDomain}/api/application/users`, {
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Accept': 'Application/vnd.pterodactyl.v1+json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.status === 200) {
+                        setApiStatus('online');
+                    } else {
+                        setApiStatus('offline');
+                    }
+                } catch (error) {
+                    setApiStatus('offline');
+                    console.error('API check failed:', error);
+                }
+            };
+            
+            // ============ CREATE REAL PANEL FUNCTION ============
+            const createRealPanel = async () => {
+                if (!panelData.name.trim() || !panelData.username.trim()) {
                     alert('Harap isi nama panel dan username!');
                     return;
                 }
                 
-                // Generate panel data
-                const panelData = {
-                    success: true,
-                    status: true,
-                    message: "✅ Berhasil membuat akun panel",
-                    data: {
-                        server_id: "P-" + Date.now().toString().slice(-8),
-                        name: panelName,
-                        username: panelUsername || panelName.toLowerCase().replace(/\s/g, ''),
-                        password: panelPassword || config.defaultPassword,
-                        created_at: new Date().toLocaleDateString('id-ID', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        }),
-                        activation_date: new Date().toLocaleDateString('id-ID'),
-                        ram: ram === '0' ? 'Unlimited' : ram + ' GB',
-                        disk: disk === '0' ? 'Unlimited' : disk + ' GB',
-                        cpu: cpu === '0' ? 'Unlimited' : cpu + ' %',
-                        domain: config.panelDomain,
-                        egg_id: config.defaultEggId
+                setLoading(true);
+                
+                try {
+                    // 1. Create User Account
+                    const userData = {
+                        email: panelData.email || `${panelData.username}${config.defaultEmailDomain}`,
+                        username: panelData.username,
+                        first_name: panelData.name.split(' ')[0] || 'User',
+                        last_name: panelData.name.split(' ')[1] || 'Panel',
+                        password: panelData.password,
+                        language: 'en',
+                        root_admin: false
+                    };
+                    
+                    const userResponse = await fetch(`${config.panelDomain}/api/application/users`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Accept': 'Application/vnd.pterodactyl.v1+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    const userResult = await userResponse.json();
+                    
+                    if (!userResponse.ok) {
+                        throw new Error(userResult.errors?.[0]?.detail || 'Failed to create user');
                     }
-                };
-                
-                setCreationResult(panelData);
-                
-                // Add to created panels list
-                const newPanel = {
-                    id: Date.now(),
-                    name: panelName,
-                    username: panelData.data.username,
-                    password: panelData.data.password,
-                    created: new Date().toLocaleString(),
-                    ram: panelData.data.ram,
-                    disk: panelData.data.disk,
-                    cpu: panelData.data.cpu,
-                    status: 'Active'
-                };
-                
-                setCreatedPanels(prev => [newPanel, ...prev]);
-                setTotalCreated(prev => prev + 1);
-                
-                // Reset form
-                setPanelName('');
-                setPanelUsername('');
-                setPanelPassword(config.defaultPassword);
+                    
+                    const userId = userResult.attributes.id;
+                    
+                    // 2. Create Server (using WA egg)
+                    const serverData = {
+                        name: panelData.name,
+                        user: userId,
+                        egg: config.defaultEggId,
+                        docker_image: "ghcr.io/parkervcp/yolks:nodejs_18",
+                        startup: "npm start",
+                        environment: {
+                            USER_UPLOAD: "0",
+                            AUTO_UPDATE: "0",
+                            STARTUP_CMD: "npm start"
+                        },
+                        limits: {
+                            memory: parseInt(panelData.ram) * 1024,
+                            swap: 0,
+                            disk: parseInt(panelData.disk) * 1024,
+                            io: 500,
+                            cpu: parseInt(panelData.cpu)
+                        },
+                        feature_limits: {
+                            databases: 1,
+                            allocations: 1,
+                            backups: 1
+                        },
+                        allocation: {
+                            default: 1
+                        }
+                    };
+                    
+                    const serverResponse = await fetch(`${config.panelDomain}/api/application/servers`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Accept': 'Application/vnd.pterodactyl.v1+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(serverData)
+                    });
+                    
+                    const serverResult = await serverResponse.json();
+                    
+                    if (!serverResponse.ok) {
+                        // Rollback: delete user if server creation fails
+                        await fetch(`${config.panelDomain}/api/application/users/${userId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${config.apiKey}`,
+                                'Accept': 'Application/vnd.pterodactyl.v1+json'
+                            }
+                        });
+                        throw new Error(serverResult.errors?.[0]?.detail || 'Failed to create server');
+                    }
+                    
+                    // SUCCESS - Panel created in real Pterodactyl
+                    const successData = {
+                        success: true,
+                        status: true,
+                        message: "✅ Berhasil membuat akun panel DI SERVER ASLI",
+                        data: {
+                            server_id: serverResult.attributes.id || `SRV-${Date.now()}`,
+                            name: panelData.name,
+                            username: panelData.username,
+                            password: panelData.password,
+                            email: userData.email,
+                            created_at: new Date().toLocaleDateString('id-ID', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }),
+                            activation_date: new Date().toLocaleDateString('id-ID'),
+                            ram: panelData.ram === '0' ? 'Unlimited' : panelData.ram + ' GB',
+                            disk: panelData.disk === '0' ? 'Unlimited' : panelData.disk + ' GB',
+                            cpu: panelData.cpu === '0' ? 'Unlimited' : panelData.cpu + ' %',
+                            domain: config.panelDomain,
+                            user_id: userId,
+                            server_uuid: serverResult.attributes.uuid,
+                            note: "Panel berhasil dibuat di server Pterodactyl Anda yang asli!"
+                        }
+                    };
+                    
+                    setCreationResult(successData);
+                    
+                    // Add to local created panels list
+                    const newPanel = {
+                        id: Date.now(),
+                        name: panelData.name,
+                        username: panelData.username,
+                        password: panelData.password,
+                        email: userData.email,
+                        created: new Date().toLocaleString(),
+                        ram: successData.data.ram,
+                        disk: successData.data.disk,
+                        cpu: successData.data.cpu,
+                        server_id: successData.data.server_id,
+                        user_id: successData.data.user_id,
+                        status: 'Active (Real Server)'
+                    };
+                    
+                    setCreatedPanels(prev => [newPanel, ...prev]);
+                    setTotalCreated(prev => prev + 1);
+                    
+                    // Reset form
+                    setPanelData({
+                        name: '',
+                        username: '',
+                        email: '',
+                        password: config.defaultPassword,
+                        ram: '1',
+                        disk: '10',
+                        cpu: '100',
+                        nodeId: '1',
+                        locationId: '1'
+                    });
+                    
+                } catch (error) {
+                    console.error('Error creating panel:', error);
+                    
+                    // Fallback to simulation if API fails
+                    const simulatedResult = {
+                        success: false,
+                        status: false,
+                        message: "❌ Gagal membuat panel di server",
+                        error: error.message,
+                        note: "Cek API Key dan koneksi ke panel Pterodactyl Anda"
+                    };
+                    
+                    setCreationResult(simulatedResult);
+                } finally {
+                    setLoading(false);
+                }
             };
             
             // ============ COPY RESULT FUNCTION ============
             const copyResultToClipboard = () => {
-                if (!creationResult) return;
+                if (!creationResult || !creationResult.success) return;
                 
                 const resultText = `
 ${creationResult.message}
 
 📡 Server ID: ${creationResult.data.server_id}
 👤 Username: ${creationResult.data.username}
+📧 Email: ${creationResult.data.email}
 🔐 Password: ${creationResult.data.password}
 🗓️ Tanggal Aktivasi: ${creationResult.data.activation_date}
 
@@ -161,6 +318,7 @@ RAM: ${creationResult.data.ram}
 Disk: ${creationResult.data.disk}
 CPU: ${creationResult.data.cpu}
 Domain: ${creationResult.data.domain}
+User ID: ${creationResult.data.user_id}
 
 📝 Rules pembelian panel:
 - Masa aktif 30 hari
@@ -174,138 +332,111 @@ Domain: ${creationResult.data.domain}
                     .catch(err => console.error('Gagal menyalin:', err));
             };
             
-            // ============ LOGIN PAGE ============
-            if (!isLoggedIn) {
-                return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-purple-900/30 to-black p-4">
-                        <div className="glass-effect rounded-3xl p-8 w-full max-w-md">
-                            <div className="text-center mb-8">
-                                <div className="inline-block p-3 rounded-full gradient-bg mb-4">
-                                    <img 
-                                        src="https://files.catbox.moe/o1ojay.jpg" 
-                                        alt="CPanel Welper Logo" 
-                                        className="w-24 h-24 rounded-full border-4 border-white/20"
-                                    />
-                                </div>
-                                <h1 className="text-4xl font-bold gradient-text mb-2">
-                                    CPANEL WELPER
-                                </h1>
-                                <p className="text-purple-300 text-lg">Panel Management System</p>
-                            </div>
-                            
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-purple-300 mb-2">Username</label>
-                                    <input
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        placeholder="Masukkan username"
-                                        className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white placeholder-gray-400"
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-purple-300 mb-2">
-                                        Password <span className="text-green-400 text-sm">(terlihat)</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                                        placeholder="Masukkan password"
-                                        className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white placeholder-gray-400"
-                                    />
-                                </div>
-                                
-                                <button
-                                    onClick={handleLogin}
-                                    className="w-full btn-primary text-white font-bold py-4 rounded-xl text-lg hover:scale-[1.02] transition-transform"
-                                >
-                                    <i className="fas fa-sign-in-alt mr-2"></i>
-                                    LOGIN TO PANEL
-                                </button>
-                                
-                                <div className="text-center text-purple-400 text-sm">
-                                    <p>Default: welper / admin123</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-            
-            // ============ MAIN PANEL ============
+            // ============ MAIN PANEL (AUTO LOGIN) ============
+            // Tidak ada login page, langsung ke sini
             return (
                 <div className="min-h-screen bg-black">
                     {/* Header */}
-                    <header className="glass-effect p-4 border-b border-purple-900">
+                    <header className="glass-effect p-4 border-b border-purple-900/50 sticky top-0 z-50">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
                             <div className="flex items-center gap-3">
-                                <img 
-                                    src="https://files.catbox.moe/o1ojay.jpg" 
-                                    alt="Logo" 
-                                    className="w-10 h-10 rounded-full border-2 border-purple-500"
-                                />
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full blur-md opacity-60"></div>
+                                    <img 
+                                        src="https://files.catbox.moe/o1ojay.jpg" 
+                                        alt="CPanel Welper Logo" 
+                                        className="relative w-12 h-12 rounded-full border-2 border-purple-500"
+                                    />
+                                </div>
                                 <div>
                                     <h1 className="text-xl font-bold gradient-text">CPANEL WELPER</h1>
-                                    <p className="text-purple-400 text-sm">Panel Creation System</p>
+                                    <p className="text-purple-400 text-sm">Auto Login • 100% Real Panel</p>
                                 </div>
                             </div>
                             
                             <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                    <p className="text-purple-300">Panels Created: <span className="font-bold">{totalCreated}</span></p>
-                                    <p className="text-purple-300 text-sm">Active: <span className="font-bold">{createdPanels.length}</span></p>
+                                <div className={`px-3 py-1 rounded-full text-sm font-medium ${apiStatus === 'online' ? 'bg-green-900/40 text-green-400' : apiStatus === 'checking' ? 'bg-yellow-900/40 text-yellow-400' : 'bg-red-900/40 text-red-400'}`}>
+                                    <i className={`fas fa-circle text-xs mr-2 ${apiStatus === 'online' ? 'animate-pulse' : ''}`}></i>
+                                    API: {apiStatus === 'online' ? 'ONLINE' : apiStatus === 'checking' ? 'CHECKING...' : 'OFFLINE'}
                                 </div>
                                 
-                                <button 
-                                    onClick={() => setIsLoggedIn(false)}
-                                    className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg transition"
-                                >
-                                    <i className="fas fa-sign-out-alt mr-2"></i>Logout
-                                </button>
+                                <div className="text-right hidden md:block">
+                                    <p className="text-purple-300">Created: <span className="font-bold">{totalCreated}</span></p>
+                                    <p className="text-purple-300 text-sm">Active: <span className="font-bold">{createdPanels.length}</span></p>
+                                </div>
                             </div>
                         </div>
                     </header>
                     
                     {/* Navigation */}
-                    <div className="p-4 border-b border-purple-900">
+                    <div className="p-4 border-b border-purple-900/30 bg-black/50">
                         <div className="max-w-7xl mx-auto flex flex-wrap gap-2">
                             <button 
                                 onClick={() => setActiveMenu('create')}
-                                className={`px-4 py-2 rounded-lg ${activeMenu === 'create' ? 'btn-primary' : 'bg-gray-900'}`}
+                                className={`px-4 py-3 rounded-xl flex items-center gap-2 ${activeMenu === 'create' ? 'btn-primary' : 'bg-gray-900 hover:bg-gray-800'}`}
                             >
-                                <i className="fas fa-plus-circle mr-2"></i>Create Panel
+                                <i className="fas fa-plus-circle"></i>
+                                Create Panel
                             </button>
                             <button 
                                 onClick={() => setActiveMenu('panels')}
-                                className={`px-4 py-2 rounded-lg ${activeMenu === 'panels' ? 'btn-primary' : 'bg-gray-900'}`}
+                                className={`px-4 py-3 rounded-xl flex items-center gap-2 ${activeMenu === 'panels' ? 'btn-primary' : 'bg-gray-900 hover:bg-gray-800'}`}
                             >
-                                <i className="fas fa-server mr-2"></i>My Panels ({createdPanels.length})
+                                <i className="fas fa-server"></i>
+                                My Panels
+                                {createdPanels.length > 0 && (
+                                    <span className="bg-purple-700 text-white text-xs px-2 py-1 rounded-full">
+                                        {createdPanels.length}
+                                    </span>
+                                )}
                             </button>
                             <button 
                                 onClick={() => setActiveMenu('config')}
-                                className={`px-4 py-2 rounded-lg ${activeMenu === 'config' ? 'btn-primary' : 'bg-gray-900'}`}
+                                className={`px-4 py-3 rounded-xl flex items-center gap-2 ${activeMenu === 'config' ? 'btn-primary' : 'bg-gray-900 hover:bg-gray-800'}`}
                             >
-                                <i className="fas fa-cog mr-2"></i>Configuration
+                                <i className="fas fa-cog"></i>
+                                Configuration
+                            </button>
+                            <button 
+                                onClick={checkApiStatus}
+                                className="px-4 py-3 rounded-xl bg-blue-900/40 hover:bg-blue-800/60 flex items-center gap-2"
+                            >
+                                <i className="fas fa-sync-alt"></i>
+                                Check API
                             </button>
                         </div>
                     </div>
                     
                     {/* Main Content */}
-                    <main className="max-w-7xl mx-auto p-4">
+                    <main className="max-w-7xl mx-auto p-4 md:p-6">
                         {/* Create Panel Section */}
                         {activeMenu === 'create' && (
-                            <div className="glass-effect rounded-2xl p-6">
-                                <h2 className="text-2xl font-bold gradient-text mb-6">
-                                    <i className="fas fa-plus-circle mr-2"></i>
-                                    Create New Panel
-                                </h2>
+                            <div className="glass-effect rounded-2xl p-6 glow-effect">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-3 gradient-bg rounded-xl">
+                                        <i className="fas fa-bolt text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold gradient-text">Create Real Pterodactyl Panel</h2>
+                                        <p className="text-purple-300">Create user + server in your real panel</p>
+                                    </div>
+                                </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Left Column - Form */}
+                                {/* API Status Warning */}
+                                {apiStatus !== 'online' && (
+                                    <div className="mb-6 p-4 bg-red-900/30 border border-red-700/50 rounded-xl animate-pulse">
+                                        <div className="flex items-center">
+                                            <i className="fas fa-exclamation-triangle text-red-400 text-xl mr-3"></i>
+                                            <div>
+                                                <p className="font-bold text-red-300">API OFFLINE</p>
+                                                <p className="text-red-200 text-sm">Cannot create real panels. Check API configuration.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Left Column - User Details */}
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-purple-300 mb-2">
@@ -313,10 +444,10 @@ Domain: ${creationResult.data.domain}
                                             </label>
                                             <input
                                                 type="text"
-                                                value={panelName}
-                                                onChange={(e) => setPanelName(e.target.value)}
+                                                value={panelData.name}
+                                                onChange={(e) => setPanelData({...panelData, name: e.target.value})}
                                                 placeholder="Contoh: welper-panel-01"
-                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                                className="w-full p-4 rounded-xl input-field text-white"
                                             />
                                         </div>
                                         
@@ -326,11 +457,27 @@ Domain: ${creationResult.data.domain}
                                             </label>
                                             <input
                                                 type="text"
-                                                value={panelUsername}
-                                                onChange={(e) => setPanelUsername(e.target.value)}
-                                                placeholder="Username untuk login panel"
-                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                                value={panelData.username}
+                                                onChange={(e) => setPanelData({...panelData, username: e.target.value})}
+                                                placeholder="Username untuk login"
+                                                className="w-full p-4 rounded-xl input-field text-white"
                                             />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">
+                                                <i className="fas fa-envelope mr-2"></i>Email (Optional)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={panelData.email}
+                                                onChange={(e) => setPanelData({...panelData, email: e.target.value})}
+                                                placeholder={`username${config.defaultEmailDomain}`}
+                                                className="w-full p-4 rounded-xl input-field text-white"
+                                            />
+                                            <p className="text-purple-400 text-sm mt-1">
+                                                Jika kosong: {panelData.username || 'username'}{config.defaultEmailDomain}
+                                            </p>
                                         </div>
                                         
                                         <div>
@@ -339,10 +486,10 @@ Domain: ${creationResult.data.domain}
                                             </label>
                                             <input
                                                 type="text"
-                                                value={panelPassword}
-                                                onChange={(e) => setPanelPassword(e.target.value)}
-                                                placeholder="Password untuk login panel"
-                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                                value={panelData.password}
+                                                onChange={(e) => setPanelData({...panelData, password: e.target.value})}
+                                                placeholder="Password untuk login"
+                                                className="w-full p-4 rounded-xl input-field text-white"
                                             />
                                             <p className="text-purple-400 text-sm mt-1">
                                                 Default: {config.defaultPassword}
@@ -356,12 +503,12 @@ Domain: ${creationResult.data.domain}
                                             <label className="block text-purple-300 mb-2">
                                                 <i className="fas fa-memory mr-2"></i>RAM Allocation
                                             </label>
-                                            <div className="grid grid-cols-3 gap-2">
+                                            <div className="grid grid-cols-4 gap-2">
                                                 {['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].map((gb) => (
                                                     <button
                                                         key={gb}
-                                                        onClick={() => setRam(gb)}
-                                                        className={`p-3 rounded-lg transition ${ram === gb ? 'gradient-bg text-white' : 'bg-black/40 border border-purple-700/30 hover:bg-purple-900/20'}`}
+                                                        onClick={() => setPanelData({...panelData, ram: gb})}
+                                                        className={`p-3 rounded-lg transition ${panelData.ram === gb ? 'gradient-bg text-white' : 'bg-black/40 border border-purple-700/30 hover:bg-purple-900/20'}`}
                                                     >
                                                         {gb === '0' ? 'Unli' : `${gb} GB`}
                                                     </button>
@@ -374,9 +521,9 @@ Domain: ${creationResult.data.domain}
                                                 <i className="fas fa-hdd mr-2"></i>Disk Storage (GB)
                                             </label>
                                             <select 
-                                                value={disk}
-                                                onChange={(e) => setDisk(e.target.value)}
-                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                                value={panelData.disk}
+                                                onChange={(e) => setPanelData({...panelData, disk: e.target.value})}
+                                                className="w-full p-4 rounded-xl input-field text-white"
                                             >
                                                 <option value="0">Unlimited</option>
                                                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50, 100].map((size) => (
@@ -390,9 +537,9 @@ Domain: ${creationResult.data.domain}
                                                 <i className="fas fa-microchip mr-2"></i>CPU Limit (%)
                                             </label>
                                             <select 
-                                                value={cpu}
-                                                onChange={(e) => setCpu(e.target.value)}
-                                                className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                                value={panelData.cpu}
+                                                onChange={(e) => setPanelData({...panelData, cpu: e.target.value})}
+                                                className="w-full p-4 rounded-xl input-field text-white"
                                             >
                                                 <option value="0">Unlimited</option>
                                                 {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200].map((percent) => (
@@ -400,47 +547,60 @@ Domain: ${creationResult.data.domain}
                                                 ))}
                                             </select>
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                {/* Current Selection Summary */}
-                                <div className="mt-6 p-4 bg-black/40 border border-purple-700/30 rounded-xl">
-                                    <h3 className="font-bold text-white mb-3">Current Configuration</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                                            <p className="text-purple-300 text-sm">RAM</p>
-                                            <p className="text-xl font-bold text-white">
-                                                {ram === '0' ? 'Unlimited' : `${ram} GB`}
-                                            </p>
-                                        </div>
-                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                                            <p className="text-purple-300 text-sm">Disk</p>
-                                            <p className="text-xl font-bold text-white">
-                                                {disk === '0' ? 'Unlimited' : `${disk} GB`}
-                                            </p>
-                                        </div>
-                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                                            <p className="text-purple-300 text-sm">CPU</p>
-                                            <p className="text-xl font-bold text-white">
-                                                {cpu === '0' ? 'Unlimited' : `${cpu}%`}
-                                            </p>
-                                        </div>
-                                        <div className="text-center p-3 bg-purple-900/20 rounded-lg">
-                                            <p className="text-purple-300 text-sm">Egg</p>
-                                            <p className="text-xl font-bold text-white">WA</p>
+                                        
+                                        <div className="p-4 bg-black/40 border border-purple-700/30 rounded-xl">
+                                            <h3 className="font-bold text-white mb-2">Current Selection</h3>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="text-center">
+                                                    <p className="text-purple-300 text-sm">RAM</p>
+                                                    <p className="text-lg font-bold">
+                                                        {panelData.ram === '0' ? 'Unlimited' : `${panelData.ram} GB`}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-purple-300 text-sm">Disk</p>
+                                                    <p className="text-lg font-bold">
+                                                        {panelData.disk === '0' ? 'Unlimited' : `${panelData.disk} GB`}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-purple-300 text-sm">CPU</p>
+                                                    <p className="text-lg font-bold">
+                                                        {panelData.cpu === '0' ? 'Unlimited' : `${panelData.cpu}%`}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-purple-300 text-sm">Egg</p>
+                                                    <p className="text-lg font-bold">WA</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 {/* Create Button */}
                                 <button
-                                    onClick={createPanel}
-                                    disabled={!panelName.trim()}
-                                    className={`w-full mt-6 py-4 rounded-xl text-lg font-bold transition-all ${!panelName.trim() ? 'opacity-70 cursor-not-allowed bg-gray-800' : 'btn-primary hover:scale-[1.02]'}`}
+                                    onClick={createRealPanel}
+                                    disabled={loading || !panelData.name.trim() || !panelData.username.trim() || apiStatus !== 'online'}
+                                    className={`w-full mt-6 py-4 rounded-xl text-lg font-bold transition-all flex items-center justify-center gap-3 ${loading || !panelData.name.trim() || !panelData.username.trim() || apiStatus !== 'online' ? 'opacity-70 cursor-not-allowed bg-gray-800' : 'btn-primary hover:scale-[1.02]'}`}
                                 >
-                                    <i className="fas fa-bolt mr-2"></i>
-                                    CREATE PANEL NOW
+                                    {loading ? (
+                                        <>
+                                            <i className="fas fa-spinner fa-spin"></i>
+                                            Creating Real Panel...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-server"></i>
+                                            {apiStatus === 'online' ? 'CREATE REAL PANEL (100%)' : 'API OFFLINE - Cannot Create'}
+                                        </>
+                                    )}
                                 </button>
+                                
+                                {/* Info */}
+                                <div className="mt-4 text-center text-purple-400 text-sm">
+                                    <p><i className="fas fa-info-circle mr-2"></i>Panel akan dibuat di: {config.panelDomain}</p>
+                                </div>
                             </div>
                         )}
                         
@@ -449,98 +609,120 @@ Domain: ${creationResult.data.domain}
                             <div className="glass-effect rounded-2xl p-6">
                                 <div className="flex justify-between items-center mb-6">
                                     <div>
-                                        <h2 className="text-2xl font-bold gradient-text">
-                                            <i className="fas fa-server mr-2"></i>
-                                            My Panels
-                                        </h2>
-                                        <p className="text-purple-300">Total: {createdPanels.length} panels</p>
+                                        <h2 className="text-2xl font-bold gradient-text">Created Panels</h2>
+                                        <p className="text-purple-300">Total: {createdPanels.length} panels created</p>
                                     </div>
                                     
                                     {createdPanels.length > 0 && (
                                         <button 
                                             onClick={() => {
-                                                setCreatedPanels([]);
-                                                setTotalCreated(0);
+                                                if (confirm('Delete all local panel records?')) {
+                                                    setCreatedPanels([]);
+                                                    setTotalCreated(0);
+                                                }
                                             }}
-                                            className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg transition"
+                                            className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 rounded-lg"
                                         >
-                                            <i className="fas fa-trash mr-2"></i>
-                                            Clear All
+                                            <i className="fas fa-trash mr-2"></i>Clear Local Records
                                         </button>
                                     )}
                                 </div>
                                 
                                 {createdPanels.length === 0 ? (
                                     <div className="text-center py-12">
-                                        <i className="fas fa-server text-6xl text-purple-700 mb-4"></i>
+                                        <i className="fas fa-server text-6xl text-purple-700/50 mb-4"></i>
                                         <h3 className="text-xl font-bold text-white mb-2">No Panels Created Yet</h3>
-                                        <p className="text-purple-400 mb-6">Create your first panel to get started</p>
+                                        <p className="text-purple-400 mb-6">Create your first real panel to get started</p>
                                         <button 
                                             onClick={() => setActiveMenu('create')}
                                             className="btn-primary px-6 py-3 rounded-lg"
                                         >
-                                            <i className="fas fa-plus mr-2"></i>
-                                            Create First Panel
+                                            <i className="fas fa-plus mr-2"></i>Create First Panel
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="space-y-4">
                                         {createdPanels.map(panel => (
-                                            <div key={panel.id} className="bg-black/40 border border-purple-700/30 rounded-xl p-5">
+                                            <div key={panel.id} className="bg-black/40 border border-purple-700/30 rounded-xl p-5 hover:border-purple-500/50 transition">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <h3 className="font-bold text-lg text-white mb-1">{panel.name}</h3>
-                                                        <p className="text-purple-400 text-sm">{panel.created}</p>
+                                                        <h3 className="font-bold text-lg text-white">{panel.name}</h3>
+                                                        <p className="text-purple-400 text-sm">
+                                                            <i className="far fa-clock mr-1"></i> {panel.created}
+                                                        </p>
                                                     </div>
-                                                    <button 
-                                                        onClick={() => setCreatedPanels(prev => prev.filter(p => p.id !== panel.id))}
-                                                        className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg"
-                                                    >
-                                                        <i className="fas fa-times text-red-400"></i>
-                                                    </button>
-                                                </div>
-                                                
-                                                <div className="space-y-2 mb-4">
-                                                    <div className="flex justify-between">
-                                                        <span className="text-purple-300">Username:</span>
-                                                        <span className="font-bold text-white">{panel.username}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-purple-300">Password:</span>
-                                                        <span className="font-bold text-white">{panel.password}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-purple-300">RAM:</span>
-                                                        <span className="font-bold text-white">{panel.ram}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-purple-300">Disk:</span>
-                                                        <span className="font-bold text-white">{panel.disk}</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="flex justify-between items-center pt-4 border-t border-purple-800/30">
-                                                    <span className="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">
-                                                        {panel.status}
-                                                    </span>
-                                                    <button 
-                                                        onClick={() => {
-                                                            const panelText = `
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const panelText = `
 Panel: ${panel.name}
 Username: ${panel.username}
 Password: ${panel.password}
+Email: ${panel.email}
+Server ID: ${panel.server_id}
+User ID: ${panel.user_id}
 RAM: ${panel.ram}
 Disk: ${panel.disk}
 CPU: ${panel.cpu}
+Status: ${panel.status}
 Created: ${panel.created}
-                                                            `.trim();
-                                                            navigator.clipboard.writeText(panelText);
-                                                            alert('Panel info copied to clipboard!');
-                                                        }}
-                                                        className="px-3 py-1 bg-purple-900/40 hover:bg-purple-800/60 rounded text-sm"
-                                                    >
-                                                        <i className="fas fa-copy mr-1"></i>Copy
-                                                    </button>
+                                                                `.trim();
+                                                                navigator.clipboard.writeText(panelText);
+                                                                alert('Panel info copied!');
+                                                            }}
+                                                            className="p-2 bg-purple-900/40 hover:bg-purple-800/60 rounded-lg"
+                                                        >
+                                                            <i className="fas fa-copy"></i>
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setCreatedPanels(prev => prev.filter(p => p.id !== panel.id))}
+                                                            className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg"
+                                                        >
+                                                            <i className="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">Username:</span>
+                                                            <span className="font-bold text-white">{panel.username}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">Password:</span>
+                                                            <span className="font-bold text-white">{panel.password}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">Email:</span>
+                                                            <span className="font-bold text-white">{panel.email}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">Server ID:</span>
+                                                            <span className="font-bold text-white">{panel.server_id}</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">RAM:</span>
+                                                            <span className="font-bold text-white">{panel.ram}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">Disk:</span>
+                                                            <span className="font-bold text-white">{panel.disk}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">CPU:</span>
+                                                            <span className="font-bold text-white">{panel.cpu}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-purple-300">Status:</span>
+                                                            <span className="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">
+                                                                {panel.status}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -552,10 +734,7 @@ Created: ${panel.created}
                         {/* Configuration Section */}
                         {activeMenu === 'config' && (
                             <div className="glass-effect rounded-2xl p-6">
-                                <h2 className="text-2xl font-bold gradient-text mb-6">
-                                    <i className="fas fa-cog mr-2"></i>
-                                    System Configuration
-                                </h2>
+                                <h2 className="text-2xl font-bold gradient-text mb-6">Configuration</h2>
                                 
                                 <div className="space-y-6">
                                     <div>
@@ -564,27 +743,17 @@ Created: ${panel.created}
                                             type="text"
                                             value={config.panelDomain}
                                             onChange={(e) => setConfig({...config, panelDomain: e.target.value})}
-                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            className="w-full p-4 rounded-xl input-field text-white"
                                         />
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-purple-300 mb-2">Application API Key</label>
+                                        <label className="block text-purple-300 mb-2">Application API Key (Admin)</label>
                                         <input
                                             type="text"
                                             value={config.apiKey}
                                             onChange={(e) => setConfig({...config, apiKey: e.target.value})}
-                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
-                                        />
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-purple-300 mb-2">Client API Key</label>
-                                        <input
-                                            type="text"
-                                            value={config.clientApiKey}
-                                            onChange={(e) => setConfig({...config, clientApiKey: e.target.value})}
-                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            className="w-full p-4 rounded-xl input-field text-white"
                                         />
                                     </div>
                                     
@@ -594,30 +763,35 @@ Created: ${panel.created}
                                             type="text"
                                             value={config.defaultPassword}
                                             onChange={(e) => setConfig({...config, defaultPassword: e.target.value})}
-                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            className="w-full p-4 rounded-xl input-field text-white"
                                         />
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-purple-300 mb-2">Egg ID (WA)</label>
+                                        <label className="block text-purple-300 mb-2">Egg ID (WA Egg)</label>
                                         <input
                                             type="text"
                                             value={config.defaultEggId}
                                             onChange={(e) => setConfig({...config, defaultEggId: e.target.value})}
-                                            placeholder="Masukkan ID egg 'wa' dari panel Anda"
-                                            className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                            placeholder="Masukkan ID egg 'WA' dari panel Anda"
+                                            className="w-full p-4 rounded-xl input-field text-white"
                                         />
                                         <p className="text-purple-400 text-sm mt-1">
-                                            Note: Ganti dengan ID egg "wa" yang ada di panel Pterodactyl Anda
+                                            <i className="fas fa-exclamation-triangle mr-1"></i>
+                                            WAJIB: Ganti dengan ID egg "WA" yang ada di panel Pterodactyl Anda
                                         </p>
                                     </div>
                                     
                                     <div className="flex gap-4">
                                         <button 
-                                            onClick={() => alert('Configuration saved!')}
-                                            className="px-6 py-3 btn-primary rounded-lg"
+                                            onClick={() => {
+                                                localStorage.setItem('welper_config', JSON.stringify(config));
+                                                alert('Configuration saved!');
+                                                checkApiStatus();
+                                            }}
+                                            className="px-6 py-3 btn-primary rounded-lg flex-1"
                                         >
-                                            <i className="fas fa-save mr-2"></i>Save Configuration
+                                            <i className="fas fa-save mr-2"></i>Save & Test
                                         </button>
                                         
                                         <button 
@@ -627,13 +801,14 @@ Created: ${panel.created}
                                                     apiKey: "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC",
                                                     clientApiKey: "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5",
                                                     defaultPassword: "Weleprtzy8#13",
-                                                    defaultEggId: "1"
+                                                    defaultEmailDomain: "@welper.my.id",
+                                                    defaultEggId: "YOUR_EGG_ID_HERE"
                                                 });
-                                                alert('Configuration reset to default!');
+                                                alert('Configuration reset!');
                                             }}
                                             className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg"
                                         >
-                                            <i className="fas fa-undo mr-2"></i>Reset to Default
+                                            <i className="fas fa-undo mr-2"></i>Reset
                                         </button>
                                     </div>
                                 </div>
@@ -642,26 +817,26 @@ Created: ${panel.created}
                     </main>
                     
                     {/* Footer */}
-                    <footer className="p-4 border-t border-purple-900 mt-8">
-                        <div className="max-w-7xl mx-auto text-center text-purple-400">
-                            <p>
+                    <footer className="p-4 border-t border-purple-900/30 mt-8">
+                        <div className="max-w-7xl mx-auto text-center">
+                            <p className="text-purple-400">
                                 <i className="fas fa-code mr-2"></i>
-                                CPANEL WELPER • Version 3.0 • Local Simulation Mode
+                                CPANEL WELPER • Auto Login • Real Panel Creation • 2025
                             </p>
-                            <p className="text-sm mt-1">
-                                All data is stored locally in your browser. For real API integration, configure backend proxy.
+                            <p className="text-purple-500 text-sm mt-1">
+                                Panel dibuat langsung di server Pterodactyl Anda yang asli
                             </p>
                         </div>
                     </footer>
                     
-                    {/* Success Modal */}
+                    {/* Result Modal */}
                     {creationResult && (
-                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                             <div className="glass-effect rounded-2xl w-full max-w-2xl overflow-hidden">
                                 <div className="p-5 border-b border-purple-800 flex justify-between items-center">
                                     <h3 className="text-xl font-bold gradient-text">
-                                        <i className="fas fa-check-circle mr-2"></i>
-                                        Panel Creation Successful!
+                                        <i className={`fas ${creationResult.success ? 'fa-check-circle text-green-400' : 'fa-exclamation-circle text-red-400'} mr-2`}></i>
+                                        {creationResult.success ? 'Panel Creation Result' : 'Creation Failed'}
                                     </h3>
                                     <button 
                                         onClick={() => setCreationResult(null)}
@@ -672,83 +847,98 @@ Created: ${panel.created}
                                 </div>
                                 
                                 <div className="p-5">
-                                    {/* Success Message */}
-                                    <div className="mb-6 p-4 bg-green-900/20 border border-green-700/30 rounded-xl">
-                                        <p className="text-green-300 text-lg font-bold">
+                                    {/* Message */}
+                                    <div className={`mb-6 p-4 rounded-xl ${creationResult.success ? 'bg-green-900/20 border border-green-700/30' : 'bg-red-900/20 border border-red-700/30'}`}>
+                                        <p className={`text-lg font-bold ${creationResult.success ? 'text-green-300' : 'text-red-300'}`}>
                                             {creationResult.message}
                                         </p>
+                                        {creationResult.error && (
+                                            <p className="text-red-200 text-sm mt-2">{creationResult.error}</p>
+                                        )}
                                     </div>
                                     
-                                    {/* Panel Details */}
-                                    <div className="bg-black/40 rounded-xl p-4 mb-6">
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between">
-                                                <span className="text-purple-300">📡 Server ID:</span>
-                                                <span className="font-bold text-white">{creationResult.data.server_id}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-purple-300">👤 Username:</span>
-                                                <span className="font-bold text-white">{creationResult.data.username}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-purple-300">🔐 Password:</span>
-                                                <span className="font-bold text-white">{creationResult.data.password}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-purple-300">🗓️ Tanggal Aktivasi:</span>
-                                                <span className="font-bold text-white">{creationResult.data.activation_date}</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="mt-4 pt-4 border-t border-purple-800">
-                                            <h4 className="font-bold text-white mb-2">⚙️ Spesifikasi server panel:</h4>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <span className="text-purple-300">RAM:</span>
-                                                    <span className="ml-2 font-bold">{creationResult.data.ram}</span>
+                                    {/* Panel Details (only if success) */}
+                                    {creationResult.success && creationResult.data && (
+                                        <>
+                                            <div className="bg-black/40 rounded-xl p-4 mb-6">
+                                                <div className="space-y-3">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">📡 Server ID:</span>
+                                                        <span className="font-bold text-white">{creationResult.data.server_id}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">👤 Username:</span>
+                                                        <span className="font-bold text-white">{creationResult.data.username}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">📧 Email:</span>
+                                                        <span className="font-bold text-white">{creationResult.data.email}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">🔐 Password:</span>
+                                                        <span className="font-bold text-white">{creationResult.data.password}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">🗓️ Tanggal Aktivasi:</span>
+                                                        <span className="font-bold text-white">{creationResult.data.activation_date}</span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span className="text-purple-300">Disk:</span>
-                                                    <span className="ml-2 font-bold">{creationResult.data.disk}</span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-purple-300">CPU:</span>
-                                                    <span className="ml-2 font-bold">{creationResult.data.cpu}</span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-purple-300">Domain:</span>
-                                                    <span className="ml-2 font-bold">{creationResult.data.domain}</span>
+                                                
+                                                <div className="mt-4 pt-4 border-t border-purple-800">
+                                                    <h4 className="font-bold text-white mb-2">⚙️ Spesifikasi server panel:</h4>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div>
+                                                            <span className="text-purple-300">RAM:</span>
+                                                            <span className="ml-2 font-bold">{creationResult.data.ram}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-purple-300">Disk:</span>
+                                                            <span className="ml-2 font-bold">{creationResult.data.disk}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-purple-300">CPU:</span>
+                                                            <span className="ml-2 font-bold">{creationResult.data.cpu}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-purple-300">Domain:</span>
+                                                            <span className="ml-2 font-bold">{creationResult.data.domain}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Rules Section */}
-                                    <div className="mb-6 p-4 bg-purple-900/20 border border-purple-700/30 rounded-xl">
-                                        <h4 className="font-bold text-white mb-2">📝 Rules pembelian panel:</h4>
-                                        <ul className="text-purple-300 text-sm space-y-1">
-                                            <li>- Masa aktif 30 hari</li>
-                                            <li>- Data bersifat pribadi, simpan dengan aman</li>
-                                            <li>- Garansi berlaku 25-30 hari Full Sampai masa aktif berakhir</li>
-                                            <li>- Klaim garansi wajib menyertakan bukti chat pembelian</li>
-                                        </ul>
-                                    </div>
+                                            
+                                            {/* Rules */}
+                                            <div className="mb-6 p-4 bg-purple-900/20 border border-purple-700/30 rounded-xl">
+                                                <h4 className="font-bold text-white mb-2">📝 Rules pembelian panel:</h4>
+                                                <ul className="text-purple-300 text-sm space-y-1">
+                                                    <li>- Masa aktif 30 hari</li>
+                                                    <li>- Data bersifat pribadi, simpan dengan aman</li>
+                                                    <li>- Garansi berlaku 25-30 hari Full Sampai masa aktif berakhir</li>
+                                                    <li>- Klaim garansi wajib menyertakan bukti chat pembelian</li>
+                                                </ul>
+                                            </div>
+                                        </>
+                                    )}
                                     
                                     {/* Action Buttons */}
                                     <div className="flex flex-wrap gap-3 justify-between">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                                            <span className="text-green-400 font-bold">SUCCESS</span>
+                                            <div className={`w-3 h-3 rounded-full ${creationResult.success ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                                            <span className={`font-bold ${creationResult.success ? 'text-green-400' : 'text-red-400'}`}>
+                                                {creationResult.success ? 'SUCCESS' : 'FAILED'}
+                                            </span>
                                         </div>
                                         
                                         <div className="flex gap-3">
-                                            <button 
-                                                onClick={copyResultToClipboard}
-                                                className="px-4 py-3 bg-purple-900/40 hover:bg-purple-800/60 rounded-xl transition flex items-center gap-2"
-                                            >
-                                                <i className="fas fa-copy"></i>
-                                                Copy All Details
-                                            </button>
+                                            {creationResult.success && (
+                                                <button 
+                                                    onClick={copyResultToClipboard}
+                                                    className="px-4 py-3 bg-purple-900/40 hover:bg-purple-800/60 rounded-xl transition flex items-center gap-2"
+                                                >
+                                                    <i className="fas fa-copy"></i>
+                                                    Copy All Details
+                                                </button>
+                                            )}
                                             <button 
                                                 onClick={() => setCreationResult(null)}
                                                 className="px-4 py-3 bg-red-900/40 hover:bg-red-800/60 rounded-xl transition flex items-center gap-2"
@@ -766,7 +956,7 @@ Created: ${panel.created}
             );
         }
         
-        // Render the app
+        // Render app
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
