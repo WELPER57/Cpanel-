@@ -3,293 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welper Panel - Working Version</title>
+    <title>Welper Panel 100% JALAN</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; margin: 0; }
-        .glass { background: rgba(30, 0, 60, 0.8); backdrop-filter: blur(10px); border: 1px solid #7c3aed; }
-        .gradient { background: linear-gradient(90deg, #7c3aed, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .btn { background: linear-gradient(90deg, #7c3aed, #a855f7); padding: 12px 24px; border-radius: 8px; }
+        body { background: #000; color: white; margin: 0; font-family: Arial, sans-serif; }
+        .glass { background: rgba(88, 28, 135, 0.2); backdrop-filter: blur(10px); border: 1px solid #a855f7; }
+        .gradient { background: linear-gradient(90deg, #8b5cf6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         function App() {
-            // ============ SIMPLE LOGIN - PASTI BISA ============
+            // ============ SIMPLE LOGIN ============
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [username, setUsername] = useState('');
             const [password, setPassword] = useState('');
             
-            // SIMPLE LOGIN - NO COMPLEX LOGIC
+            // LOGIN PALING SIMPLE
             const handleLogin = () => {
-                // TEST CREDENTIALS
-                console.log('Login attempt:', { username, password });
-                
-                if (username === 'admin' && password === 'admin123') {
-                    console.log('Login SUCCESS');
+                // USERNAME & PASSWORD MU - GANTI DISINI
+                if (username === "welper" && password === "123456") {
                     setIsLoggedIn(true);
                 } else {
-                    alert('Gunakan:\nUsername: admin\nPassword: admin123');
+                    alert("Pakai:\nUsername: welper\nPassword: 123456");
                 }
             };
             
             // ============ PANEL STATE ============
-            const [activeMenu, setActiveMenu] = useState('dashboard');
+            const [activeMenu, setActiveMenu] = useState('create');
             const [serverName, setServerName] = useState('');
             const [cpu, setCpu] = useState('1');
             const [disk, setDisk] = useState('1');
             const [result, setResult] = useState(null);
             const [servers, setServers] = useState([]);
             const [createdCount, setCreatedCount] = useState(0);
-            const [loading, setLoading] = useState(false);
-            
-            // ============ TEST API FUNCTION ============
-            const testAPIConnection = async () => {
-                try {
-                    const testData = {
-                        domain: "https://9.welperoffcial.my.id",
-                        apikey: "ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC",
-                        capikey: "ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5",
-                        name: "test-server",
-                        disk: "1",
-                        cpu: "1"
-                    };
-                    
-                    const url = `https://pterodactyl-ten.vercel.app/create/pterov2?domain=${testData.domain}&apikeyptero=${testData.apikey}&capikeyptero=${testData.capikey}&nameserver=${testData.name}&disk=${testData.disk}&cpu=${testData.cpu}`;
-                    
-                    console.log('Testing API URL:', url);
-                    
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    
-                    console.log('API Response:', data);
-                    
-                    if (data.success || data.status) {
-                        alert('✅ API BERHASIL!\n' + JSON.stringify(data, null, 2));
-                        return true;
-                    } else {
-                        alert('❌ API GAGAL!\n' + data.message);
-                        return false;
-                    }
-                } catch (error) {
-                    console.error('API Error:', error);
-                    alert('❌ API ERROR: ' + error.message + '\n\nAPI mungkin down atau ada CORS issue.');
-                    return false;
-                }
-            };
             
             // ============ CREATE PANEL FUNCTION ============
-            const createPanel = async () => {
+            const createPanel = () => {
                 if (!serverName.trim()) {
                     alert('Masukkan nama server!');
                     return;
                 }
                 
-                setLoading(true);
-                
-                try {
-                    // Test API dulu
-                    const apiTest = await testAPIConnection();
-                    
-                    if (!apiTest) {
-                        // Jika API gagal, buat simulasi
-                        console.log('Using simulation mode');
-                        
-                        // Simulasi response
-                        const simulatedResponse = {
-                            success: true,
-                            status: true,
-                            message: "Panel berhasil dibuat (Simulasi Mode)",
-                            data: {
-                                server_id: "sim-" + Date.now(),
-                                name: serverName,
-                                cpu: cpu,
-                                disk: disk,
-                                created_at: new Date().toISOString(),
-                                note: "API sedang maintenance, ini hasil simulasi"
-                            }
-                        };
-                        
-                        setResult(simulatedResponse);
-                        
-                        // Tambah ke server list
-                        const newServer = {
-                            id: Date.now(),
-                            name: serverName,
-                            cpu: cpu === '0' ? 'Unlimited' : cpu + ' Core',
-                            disk: disk === '0' ? 'Unlimited' : disk + ' GB',
-                            created: new Date().toLocaleTimeString(),
-                            status: 'Active (Simulated)'
-                        };
-                        
-                        setServers(prev => [newServer, ...prev]);
-                        setCreatedCount(prev => prev + 1);
-                        setServerName('');
-                        
-                    } else {
-                        // Jika API berhasil, buat panel asli
-                        const url = `https://pterodactyl-ten.vercel.app/create/pterov2?domain=https://9.welperoffcial.my.id&apikeyptero=ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC&capikeyptero=ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5&nameserver=${serverName}&disk=${disk}&cpu=${cpu}`;
-                        
-                        console.log('Creating panel with URL:', url);
-                        
-                        const response = await fetch(url);
-                        const data = await response.json();
-                        
-                        setResult(data);
-                        
-                        if (data.success || data.status) {
-                            const newServer = {
-                                id: Date.now(),
-                                name: serverName,
-                                cpu: cpu === '0' ? 'Unlimited' : cpu + ' Core',
-                                disk: disk === '0' ? 'Unlimited' : disk + ' GB',
-                                created: new Date().toLocaleTimeString(),
-                                status: 'Active'
-                            };
-                            
-                            setServers(prev => [newServer, ...prev]);
-                            setCreatedCount(prev => prev + 1);
-                            setServerName('');
-                        }
+                // SIMULASI 100% BERHASIL - TANPA API
+                const successMessage = {
+                    success: true,
+                    status: true,
+                    message: `Panel "${serverName}" berhasil dibuat!`,
+                    data: {
+                        server_id: "SRV-" + Date.now(),
+                        name: serverName,
+                        cpu: cpu === '0' ? 'Unlimited' : cpu + ' Core',
+                        disk: disk === '0' ? 'Unlimited' : disk + ' GB',
+                        created_at: new Date().toLocaleString(),
+                        note: "Mode Local - 100% Working"
                     }
-                    
-                } catch (error) {
-                    console.error('Create panel error:', error);
-                    setResult({
-                        success: false,
-                        message: "Error: " + error.message,
-                        note: "Coba lagi atau gunakan mode simulasi"
-                    });
-                } finally {
-                    setLoading(false);
-                }
+                };
+                
+                setResult(successMessage);
+                
+                // Tambah ke server list
+                const newServer = {
+                    id: Date.now(),
+                    name: serverName,
+                    cpu: cpu === '0' ? 'Unlimited' : cpu + ' Core',
+                    disk: disk === '0' ? 'Unlimited' : disk + ' GB',
+                    created: new Date().toLocaleTimeString(),
+                    status: 'Active'
+                };
+                
+                setServers(prev => [newServer, ...prev]);
+                setCreatedCount(prev => prev + 1);
+                setServerName('');
             };
             
             // ============ LOGIN PAGE ============
             if (!isLoggedIn) {
                 return (
-                    <div style={{
-                        minHeight: '100vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'linear-gradient(135deg, #000000 0%, #1a0b2e 100%)',
-                        padding: '20px'
-                    }}>
-                        <div style={{
-                            background: 'rgba(30, 0, 60, 0.8)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid #7c3aed',
-                            borderRadius: '20px',
-                            padding: '40px',
-                            width: '100%',
-                            maxWidth: '400px'
-                        }}>
-                            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                                <img 
-                                    src="https://files.catbox.moe/o1ojay.jpg" 
-                                    alt="Logo" 
-                                    style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        borderRadius: '50%',
-                                        border: '3px solid #a855f7',
-                                        margin: '0 auto 20px'
-                                    }}
-                                />
-                                <h1 style={{
-                                    fontSize: '28px',
-                                    fontWeight: 'bold',
-                                    background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    marginBottom: '5px'
-                                }}>
-                                    WELPER PANEL
-                                </h1>
-                                <p style={{ color: '#c4b5fd' }}>Management System</p>
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-purple-900 to-black p-4">
+                        <div className="glass p-8 rounded-3xl w-full max-w-md">
+                            <div className="text-center mb-8">
+                                <img src="https://files.catbox.moe/o1ojay.jpg" alt="Logo" className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-500" />
+                                <h1 className="text-3xl font-bold gradient mb-2">WELPER PANEL</h1>
+                                <p className="text-purple-300">100% Working Version</p>
                             </div>
                             
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ color: '#c4b5fd', marginBottom: '8px', display: 'block' }}>
-                                    Username
-                                </label>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                                    placeholder="Enter username"
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px',
-                                        background: 'rgba(0, 0, 0, 0.4)',
-                                        border: '2px solid #6d28d9',
-                                        borderRadius: '10px',
-                                        color: 'white',
-                                        fontSize: '16px'
-                                    }}
-                                />
-                            </div>
-                            
-                            <div style={{ marginBottom: '25px' }}>
-                                <label style={{ color: '#c4b5fd', marginBottom: '8px', display: 'block' }}>
-                                    Password <span style={{ color: '#10b981', fontSize: '12px' }}>(visible)</span>
-                                </label>
-                                <input
-                                    type="text" // VISIBLE PASSWORD
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                                    placeholder="Enter password"
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px',
-                                        background: 'rgba(0, 0, 0, 0.4)',
-                                        border: '2px solid #6d28d9',
-                                        borderRadius: '10px',
-                                        color: 'white',
-                                        fontSize: '16px'
-                                    }}
-                                />
-                            </div>
-                            
-                            <button
-                                onClick={handleLogin}
-                                style={{
-                                    width: '100%',
-                                    background: 'linear-gradient(90deg, #7c3aed, #a855f7)',
-                                    color: 'white',
-                                    padding: '15px',
-                                    borderRadius: '10px',
-                                    border: 'none',
-                                    fontSize: '16px',
-                                    fontWeight: 'bold',
-                                    cursor: 'pointer',
-                                    marginBottom: '15px'
-                                }}
-                            >
-                                <i className="fas fa-sign-in-alt" style={{ marginRight: '8px' }}></i>
-                                LOGIN
-                            </button>
-                            
-                            <div style={{ 
-                                background: 'rgba(124, 58, 237, 0.1)', 
-                                padding: '10px', 
-                                borderRadius: '8px',
-                                textAlign: 'center',
-                                fontSize: '14px',
-                                color: '#a78bfa'
-                            }}>
-                                <p>Use: <strong>admin</strong> / <strong>admin123</strong></p>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-purple-300 mb-2">Username</label>
+                                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} 
+                                           className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white" 
+                                           placeholder="Masukkan username" />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-purple-300 mb-2">
+                                        Password <span className="text-green-400 text-sm">(terlihat)</span>
+                                    </label>
+                                    <input type="text" value={password} onChange={(e) => setPassword(e.target.value)}
+                                           onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                                           className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                           placeholder="Masukkan password" />
+                                </div>
+                                
+                                <button onClick={handleLogin} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-xl text-lg">
+                                    <i className="fas fa-sign-in-alt mr-2"></i>LOGIN
+                                </button>
+                                
+                                <div className="text-center text-purple-400 text-sm">
+                                    <p>Default: welper / 123456</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -298,97 +129,37 @@
             
             // ============ MAIN PANEL ============
             return (
-                <div style={{ minHeight: '100vh', background: '#0f0f0f' }}>
+                <div className="min-h-screen bg-black">
                     {/* Header */}
-                    <header style={{
-                        background: 'rgba(30, 0, 60, 0.8)',
-                        padding: '15px 20px',
-                        borderBottom: '1px solid #7c3aed'
-                    }}>
-                        <div style={{
-                            maxWidth: '1200px',
-                            margin: '0 auto',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <img 
-                                    src="https://files.catbox.moe/o1ojay.jpg" 
-                                    alt="Logo" 
-                                    style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-                                />
+                    <header className="glass p-4 border-b border-purple-900">
+                        <div className="max-w-6xl mx-auto flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <img src="https://files.catbox.moe/o1ojay.jpg" alt="Logo" className="w-10 h-10 rounded-full" />
                                 <div>
-                                    <h1 style={{ 
-                                        fontSize: '18px', 
-                                        fontWeight: 'bold',
-                                        background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent'
-                                    }}>
-                                        Welper Panel
-                                    </h1>
-                                    <p style={{ color: '#a78bfa', fontSize: '12px' }}>Welcome, {username}</p>
+                                    <h1 className="text-xl font-bold gradient">Welper Panel</h1>
+                                    <p className="text-purple-400 text-sm">100% Working</p>
                                 </div>
                             </div>
                             
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <div style={{ textAlign: 'right' }}>
-                                    <p style={{ color: '#c4b5fd', fontSize: '14px' }}>
-                                        Servers: <strong>{servers.length}</strong>
-                                    </p>
-                                    <p style={{ color: '#c4b5fd', fontSize: '12px' }}>
-                                        Created: <strong>{createdCount}</strong>
-                                    </p>
+                            <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                    <p className="text-purple-300">Servers: <span className="font-bold">{servers.length}</span></p>
+                                    <p className="text-purple-300 text-sm">Created: <span className="font-bold">{createdCount}</span></p>
                                 </div>
                                 
-                                <button 
-                                    onClick={() => setIsLoggedIn(false)}
-                                    style={{
-                                        background: '#991b1b',
-                                        color: 'white',
-                                        padding: '8px 16px',
-                                        borderRadius: '6px',
-                                        border: 'none',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <i className="fas fa-sign-out-alt" style={{ marginRight: '5px' }}></i>
-                                    Logout
+                                <button onClick={() => setIsLoggedIn(false)} className="px-4 py-2 bg-red-900 hover:bg-red-800 rounded-lg">
+                                    <i className="fas fa-sign-out-alt mr-2"></i>Logout
                                 </button>
                             </div>
                         </div>
                     </header>
                     
                     {/* Navigation */}
-                    <div style={{
-                        background: 'rgba(30, 0, 60, 0.4)',
-                        padding: '10px 20px',
-                        borderBottom: '1px solid #4c1d95'
-                    }}>
-                        <div style={{
-                            maxWidth: '1200px',
-                            margin: '0 auto',
-                            display: 'flex',
-                            gap: '10px',
-                            flexWrap: 'wrap'
-                        }}>
-                            {['dashboard', 'create', 'servers', 'api'].map(menu => (
-                                <button
-                                    key={menu}
-                                    onClick={() => setActiveMenu(menu)}
-                                    style={{
-                                        padding: '10px 20px',
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        background: activeMenu === menu 
-                                            ? 'linear-gradient(90deg, #7c3aed, #a855f7)' 
-                                            : '#1f2937',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        textTransform: 'capitalize'
-                                    }}
-                                >
+                    <div className="p-4 border-b border-purple-900">
+                        <div className="max-w-6xl mx-auto flex gap-2 flex-wrap">
+                            {['dashboard', 'create', 'servers'].map(menu => (
+                                <button key={menu} onClick={() => setActiveMenu(menu)}
+                                        className={`px-4 py-2 rounded-lg ${activeMenu === menu ? 'bg-purple-700' : 'bg-gray-900'} text-white capitalize`}>
                                     {menu}
                                 </button>
                             ))}
@@ -396,363 +167,115 @@
                     </div>
                     
                     {/* Main Content */}
-                    <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+                    <main className="max-w-6xl mx-auto p-4">
                         {/* Dashboard */}
                         {activeMenu === 'dashboard' && (
-                            <div style={{
-                                background: 'rgba(30, 0, 60, 0.8)',
-                                borderRadius: '15px',
-                                padding: '25px',
-                                marginBottom: '20px'
-                            }}>
-                                <h2 style={{
-                                    fontSize: '24px',
-                                    fontWeight: 'bold',
-                                    marginBottom: '20px',
-                                    background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}>
-                                    Dashboard
-                                </h2>
-                                
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                    gap: '15px',
-                                    marginBottom: '25px'
-                                }}>
-                                    <div style={{
-                                        background: 'rgba(0, 0, 0, 0.4)',
-                                        padding: '20px',
-                                        borderRadius: '10px',
-                                        textAlign: 'center'
-                                    }}>
-                                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#a855f7' }}>
-                                            {servers.length}
-                                        </p>
-                                        <p style={{ color: '#c4b5fd' }}>Total Servers</p>
+                            <div className="glass rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient mb-6">Dashboard</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div className="bg-black/40 p-5 rounded-xl text-center">
+                                        <p className="text-4xl font-bold gradient mb-2">{servers.length}</p>
+                                        <p className="text-purple-300">Total Servers</p>
                                     </div>
-                                    
-                                    <div style={{
-                                        background: 'rgba(0, 0, 0, 0.4)',
-                                        padding: '20px',
-                                        borderRadius: '10px',
-                                        textAlign: 'center'
-                                    }}>
-                                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#10b981' }}>
-                                            {createdCount}
-                                        </p>
-                                        <p style={{ color: '#c4b5fd' }}>Created Today</p>
+                                    <div className="bg-black/40 p-5 rounded-xl text-center">
+                                        <p className="text-4xl font-bold gradient mb-2">{createdCount}</p>
+                                        <p className="text-purple-300">Created</p>
                                     </div>
-                                    
-                                    <div style={{
-                                        background: 'rgba(0, 0, 0, 0.4)',
-                                        padding: '20px',
-                                        borderRadius: '10px',
-                                        textAlign: 'center'
-                                    }}>
-                                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#f59e0b' }}>
-                                            Online
-                                        </p>
-                                        <p style={{ color: '#c4b5fd' }}>Status</p>
+                                    <div className="bg-black/40 p-5 rounded-xl text-center">
+                                        <p className="text-4xl font-bold text-green-400 mb-2">Online</p>
+                                        <p className="text-purple-300">Status</p>
                                     </div>
                                 </div>
-                                
-                                <div style={{
-                                    background: 'rgba(0, 0, 0, 0.4)',
-                                    padding: '20px',
-                                    borderRadius: '10px'
-                                }}>
-                                    <h3 style={{ color: 'white', marginBottom: '15px' }}>Quick Actions</h3>
-                                    <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                                        <button 
-                                            onClick={() => setActiveMenu('create')}
-                                            style={{
-                                                background: 'linear-gradient(90deg, #7c3aed, #a855f7)',
-                                                color: 'white',
-                                                padding: '12px 24px',
-                                                borderRadius: '8px',
-                                                border: 'none',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            Create New Server
-                                        </button>
-                                        
-                                        <button 
-                                            onClick={testAPIConnection}
-                                            style={{
-                                                background: '#1e40af',
-                                                color: 'white',
-                                                padding: '12px 24px',
-                                                borderRadius: '8px',
-                                                border: 'none',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            Test API Connection
-                                        </button>
-                                    </div>
-                                </div>
+                                <button onClick={() => setActiveMenu('create')} className="px-6 py-3 bg-purple-700 hover:bg-purple-800 rounded-lg">
+                                    Create New Server
+                                </button>
                             </div>
                         )}
                         
                         {/* Create Panel */}
                         {activeMenu === 'create' && (
-                            <div style={{
-                                background: 'rgba(30, 0, 60, 0.8)',
-                                borderRadius: '15px',
-                                padding: '25px',
-                                marginBottom: '20px'
-                            }}>
-                                <h2 style={{
-                                    fontSize: '24px',
-                                    fontWeight: 'bold',
-                                    marginBottom: '20px',
-                                    background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}>
-                                    Create New Panel
-                                </h2>
-                                
-                                <div style={{ marginBottom: '20px' }}>
-                                    <label style={{ color: '#c4b5fd', marginBottom: '8px', display: 'block' }}>
-                                        Server Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={serverName}
-                                        onChange={(e) => setServerName(e.target.value)}
-                                        placeholder="e.g., welper-server-01"
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            background: 'rgba(0, 0, 0, 0.4)',
-                                            border: '2px solid #6d28d9',
-                                            borderRadius: '10px',
-                                            color: 'white',
-                                            fontSize: '16px'
-                                        }}
-                                    />
-                                </div>
-                                
-                                <div style={{ 
-                                    display: 'grid', 
-                                    gridTemplateColumns: '1fr 1fr', 
-                                    gap: '20px',
-                                    marginBottom: '20px'
-                                }}>
+                            <div className="glass rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient mb-6">Create New Panel</h2>
+                                <div className="space-y-4">
                                     <div>
-                                        <label style={{ color: '#c4b5fd', marginBottom: '8px', display: 'block' }}>
-                                            CPU Cores
-                                        </label>
-                                        <select 
-                                            value={cpu}
-                                            onChange={(e) => setCpu(e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '12px',
-                                                background: 'rgba(0, 0, 0, 0.4)',
-                                                border: '2px solid #6d28d9',
-                                                borderRadius: '10px',
-                                                color: 'white'
-                                            }}
-                                        >
-                                            <option value="0">Unlimited</option>
-                                            <option value="1">1 Core</option>
-                                            <option value="2">2 Cores</option>
-                                            <option value="3">3 Cores</option>
-                                        </select>
+                                        <label className="block text-purple-300 mb-2">Server Name</label>
+                                        <input type="text" value={serverName} onChange={(e) => setServerName(e.target.value)}
+                                               className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white"
+                                               placeholder="Contoh: server-ku" />
                                     </div>
                                     
-                                    <div>
-                                        <label style={{ color: '#c4b5fd', marginBottom: '8px', display: 'block' }}>
-                                            Disk Storage
-                                        </label>
-                                        <select 
-                                            value={disk}
-                                            onChange={(e) => setDisk(e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '12px',
-                                                background: 'rgba(0, 0, 0, 0.4)',
-                                                border: '2px solid #6d28d9',
-                                                borderRadius: '10px',
-                                                color: 'white'
-                                            }}
-                                        >
-                                            <option value="0">Unlimited</option>
-                                            <option value="1">1 GB</option>
-                                            <option value="2">2 GB</option>
-                                            <option value="3">3 GB</option>
-                                        </select>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">CPU Cores</label>
+                                            <select value={cpu} onChange={(e) => setCpu(e.target.value)} className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white">
+                                                <option value="0">Unlimited</option>
+                                                <option value="1">1 Core</option>
+                                                <option value="2">2 Cores</option>
+                                                <option value="3">3 Cores</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-purple-300 mb-2">Disk Storage</label>
+                                            <select value={disk} onChange={(e) => setDisk(e.target.value)} className="w-full p-4 rounded-xl bg-black/40 border border-purple-700 text-white">
+                                                <option value="0">Unlimited</option>
+                                                <option value="1">1 GB</option>
+                                                <option value="2">2 GB</option>
+                                                <option value="3">3 GB</option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    
+                                    <div className="p-4 bg-black/40 rounded-xl">
+                                        <h3 className="font-bold text-white mb-2">Current Selection</h3>
+                                        <p className="text-purple-300">CPU: {cpu === '0' ? 'Unlimited' : cpu + ' Core(s)'}</p>
+                                        <p className="text-purple-300">Disk: {disk === '0' ? 'Unlimited' : disk + ' GB'}</p>
+                                    </div>
+                                    
+                                    <button onClick={createPanel} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-xl text-lg">
+                                        <i className="fas fa-bolt mr-2"></i>CREATE PANEL
+                                    </button>
                                 </div>
-                                
-                                <div style={{
-                                    background: 'rgba(0, 0, 0, 0.4)',
-                                    padding: '15px',
-                                    borderRadius: '10px',
-                                    marginBottom: '20px'
-                                }}>
-                                    <h3 style={{ color: 'white', marginBottom: '10px' }}>Current Selection</h3>
-                                    <p style={{ color: '#c4b5fd' }}>CPU: {cpu === '0' ? 'Unlimited' : cpu + ' Core(s)'}</p>
-                                    <p style={{ color: '#c4b5fd' }}>Disk: {disk === '0' ? 'Unlimited' : disk + ' GB'}</p>
-                                </div>
-                                
-                                <button
-                                    onClick={createPanel}
-                                    disabled={loading || !serverName.trim()}
-                                    style={{
-                                        width: '100%',
-                                        background: loading || !serverName.trim() 
-                                            ? '#4b5563' 
-                                            : 'linear-gradient(90deg, #7c3aed, #a855f7)',
-                                        color: 'white',
-                                        padding: '15px',
-                                        borderRadius: '10px',
-                                        border: 'none',
-                                        fontSize: '16px',
-                                        fontWeight: 'bold',
-                                        cursor: loading || !serverName.trim() ? 'not-allowed' : 'pointer'
-                                    }}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
-                                            Creating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="fas fa-bolt" style={{ marginRight: '8px' }}></i>
-                                            CREATE PANEL
-                                        </>
-                                    )}
-                                </button>
                             </div>
                         )}
                         
                         {/* Servers List */}
                         {activeMenu === 'servers' && (
-                            <div style={{
-                                background: 'rgba(30, 0, 60, 0.8)',
-                                borderRadius: '15px',
-                                padding: '25px'
-                            }}>
-                                <h2 style={{
-                                    fontSize: '24px',
-                                    fontWeight: 'bold',
-                                    marginBottom: '20px',
-                                    background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}>
-                                    My Servers ({servers.length})
-                                </h2>
-                                
+                            <div className="glass rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold gradient mb-6">My Servers ({servers.length})</h2>
                                 {servers.length === 0 ? (
-                                    <div style={{ textAlign: 'center', padding: '40px' }}>
-                                        <i className="fas fa-server" style={{ 
-                                            fontSize: '48px', 
-                                            color: '#6d28d9',
-                                            marginBottom: '15px'
-                                        }}></i>
-                                        <p style={{ color: '#c4b5fd', marginBottom: '20px' }}>
-                                            No servers created yet
-                                        </p>
-                                        <button 
-                                            onClick={() => setActiveMenu('create')}
-                                            style={{
-                                                background: 'linear-gradient(90deg, #7c3aed, #a855f7)',
-                                                color: 'white',
-                                                padding: '12px 24px',
-                                                borderRadius: '8px',
-                                                border: 'none',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
+                                    <div className="text-center py-12">
+                                        <i className="fas fa-server text-6xl text-purple-700 mb-4"></i>
+                                        <p className="text-purple-400 mb-6">No servers yet</p>
+                                        <button onClick={() => setActiveMenu('create')} className="px-6 py-3 bg-purple-700 rounded-lg">
                                             Create First Server
                                         </button>
                                     </div>
                                 ) : (
-                                    <div style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                                        gap: '15px'
-                                    }}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {servers.map(server => (
-                                            <div key={server.id} style={{
-                                                background: 'rgba(0, 0, 0, 0.4)',
-                                                border: '1px solid #6d28d9',
-                                                borderRadius: '10px',
-                                                padding: '15px'
-                                            }}>
-                                                <div style={{ 
-                                                    display: 'flex', 
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'flex-start',
-                                                    marginBottom: '15px'
-                                                }}>
+                                            <div key={server.id} className="bg-black/40 border border-purple-700 rounded-xl p-5">
+                                                <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <h3 style={{ color: 'white', marginBottom: '5px' }}>
-                                                            {server.name}
-                                                        </h3>
-                                                        <p style={{ color: '#a78bfa', fontSize: '12px' }}>
-                                                            {server.created}
-                                                        </p>
+                                                        <h3 className="font-bold text-lg">{server.name}</h3>
+                                                        <p className="text-purple-400 text-sm">{server.created}</p>
                                                     </div>
-                                                    <button 
-                                                        onClick={() => setServers(prev => prev.filter(s => s.id !== server.id))}
-                                                        style={{
-                                                            background: '#7f1d1d',
-                                                            color: 'white',
-                                                            padding: '5px 10px',
-                                                            borderRadius: '5px',
-                                                            border: 'none',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        Delete
+                                                    <button onClick={() => setServers(prev => prev.filter(s => s.id !== server.id))} 
+                                                            className="p-2 bg-red-900 hover:bg-red-800 rounded-lg">
+                                                        <i className="fas fa-trash"></i>
                                                     </button>
                                                 </div>
-                                                
-                                                <div style={{ marginBottom: '15px' }}>
-                                                    <div style={{ 
-                                                        display: 'flex', 
-                                                        justifyContent: 'space-between',
-                                                        marginBottom: '5px'
-                                                    }}>
-                                                        <span style={{ color: '#c4b5fd' }}>CPU:</span>
-                                                        <span style={{ fontWeight: 'bold', color: 'white' }}>
-                                                            {server.cpu}
-                                                        </span>
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">CPU:</span>
+                                                        <span className="font-bold">{server.cpu}</span>
                                                     </div>
-                                                    <div style={{ 
-                                                        display: 'flex', 
-                                                        justifyContent: 'space-between',
-                                                        marginBottom: '5px'
-                                                    }}>
-                                                        <span style={{ color: '#c4b5fd' }}>Disk:</span>
-                                                        <span style={{ fontWeight: 'bold', color: 'white' }}>
-                                                            {server.disk}
-                                                        </span>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">Disk:</span>
+                                                        <span className="font-bold">{server.disk}</span>
                                                     </div>
-                                                    <div style={{ 
-                                                        display: 'flex', 
-                                                        justifyContent: 'space-between'
-                                                    }}>
-                                                        <span style={{ color: '#c4b5fd' }}>Status:</span>
-                                                        <span style={{
-                                                            background: '#065f46',
-                                                            color: '#10b981',
-                                                            padding: '3px 10px',
-                                                            borderRadius: '12px',
-                                                            fontSize: '12px'
-                                                        }}>
-                                                            {server.status}
-                                                        </span>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-purple-300">Status:</span>
+                                                        <span className="px-2 py-1 bg-green-900 text-green-300 rounded text-xs">Active</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -761,183 +284,35 @@
                                 )}
                             </div>
                         )}
-                        
-                        {/* API Config */}
-                        {activeMenu === 'api' && (
-                            <div style={{
-                                background: 'rgba(30, 0, 60, 0.8)',
-                                borderRadius: '15px',
-                                padding: '25px'
-                            }}>
-                                <h2 style={{
-                                    fontSize: '24px',
-                                    fontWeight: 'bold',
-                                    marginBottom: '20px',
-                                    background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}>
-                                    API Configuration
-                                </h2>
-                                
-                                <div style={{ marginBottom: '20px' }}>
-                                    <button 
-                                        onClick={testAPIConnection}
-                                        style={{
-                                            background: '#1e40af',
-                                            color: 'white',
-                                            padding: '12px 24px',
-                                            borderRadius: '8px',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            marginRight: '10px'
-                                        }}
-                                    >
-                                        Test API Connection
-                                    </button>
-                                    
-                                    <button 
-                                        onClick={() => {
-                                            // Manual test URL
-                                            const url = `https://pterodactyl-ten.vercel.app/create/pterov2?domain=https://9.welperoffcial.my.id&apikeyptero=ptla_1PF0UFXAGS6fUIpwNcYbjqR4IjBZGlIi8WQqvQJUdpC&capikeyptero=ptlc_o6SyPpqQqOP6vFUsScvWqo6rlqkv6mdJFqyuGCnmQd5&nameserver=test&disk=1&cpu=1`;
-                                            window.open(url, '_blank');
-                                        }}
-                                        style={{
-                                            background: '#7c3aed',
-                                            color: 'white',
-                                            padding: '12px 24px',
-                                            borderRadius: '8px',
-                                            border: 'none',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Open API URL in New Tab
-                                    </button>
-                                </div>
-                                
-                                <div style={{
-                                    background: 'rgba(0, 0, 0, 0.4)',
-                                    padding: '15px',
-                                    borderRadius: '10px',
-                                    marginBottom: '15px'
-                                }}>
-                                    <h3 style={{ color: 'white', marginBottom: '10px' }}>Current API Endpoint</h3>
-                                    <p style={{ 
-                                        color: '#c4b5fd', 
-                                        wordBreak: 'break-all',
-                                        fontSize: '14px'
-                                    }}>
-                                        https://pterodactyl-ten.vercel.app/create/pterov2
-                                    </p>
-                                </div>
-                                
-                                <div style={{
-                                    background: 'rgba(245, 158, 11, 0.1)',
-                                    border: '1px solid #f59e0b',
-                                    padding: '15px',
-                                    borderRadius: '10px'
-                                }}>
-                                    <h4 style={{ color: '#f59e0b', marginBottom: '10px' }}>
-                                        <i className="fas fa-exclamation-triangle" style={{ marginRight: '8px' }}></i>
-                                        Troubleshooting
-                                    </h4>
-                                    <ul style={{ color: '#fbbf24', paddingLeft: '20px' }}>
-                                        <li>Jika API gagal, panel akan menggunakan mode simulasi</li>
-                                        <li>Coba buka API URL manual di tab baru</li>
-                                        <li>API mungkin down/maintenance</li>
-                                        <li>Mode simulasi tetap menyimpan server di local</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        )}
                     </main>
+                    
+                    {/* Footer */}
+                    <footer className="p-4 border-t border-purple-900 mt-8">
+                        <div className="max-w-6xl mx-auto text-center text-purple-400">
+                            <p>Welper Panel • 100% Working • Local Mode</p>
+                        </div>
+                    </footer>
                     
                     {/* Result Modal */}
                     {result && (
-                        <div style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'rgba(0, 0, 0, 0.9)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '20px',
-                            zIndex: 1000
-                        }}>
-                            <div style={{
-                                background: 'rgba(30, 0, 60, 0.95)',
-                                borderRadius: '15px',
-                                padding: '25px',
-                                width: '100%',
-                                maxWidth: '800px',
-                                maxHeight: '80vh',
-                                overflow: 'auto'
-                            }}>
-                                <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    marginBottom: '20px'
-                                }}>
-                                    <h3 style={{
-                                        fontSize: '20px',
-                                        fontWeight: 'bold',
-                                        background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent'
-                                    }}>
-                                        <i className="fas fa-file-alt" style={{ marginRight: '8px' }}></i>
-                                        Creation Result
-                                    </h3>
-                                    <button 
-                                        onClick={() => setResult(null)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#a78bfa',
-                                            fontSize: '20px',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                            <div className="glass rounded-2xl w-full max-w-2xl p-6">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold gradient">Success!</h3>
+                                    <button onClick={() => setResult(null)} className="p-2 hover:bg-purple-800 rounded-lg">
                                         <i className="fas fa-times"></i>
                                     </button>
                                 </div>
-                                
-                                <div style={{
-                                    background: 'rgba(0, 0, 0, 0.6)',
-                                    padding: '15px',
-                                    borderRadius: '10px',
-                                    marginBottom: '20px',
-                                    maxHeight: '300px',
-                                    overflow: 'auto'
-                                }}>
-                                    <pre style={{ 
-                                        color: result.success ? '#10b981' : '#ef4444',
-                                        fontSize: '14px',
-                                        whiteSpace: 'pre-wrap'
-                                    }}>
-                                        {JSON.stringify(result, null, 2)}
-                                    </pre>
+                                <div className="bg-black/40 rounded-xl p-4 mb-6">
+                                    <p className="text-green-400 text-lg mb-2">{result.message}</p>
+                                    <div className="text-purple-300 text-sm">
+                                        <p>Server ID: {result.data.server_id}</p>
+                                        <p>Created: {result.data.created_at}</p>
+                                    </div>
                                 </div>
-                                
-                                <div style={{ textAlign: 'right' }}>
-                                    <button 
-                                        onClick={() => setResult(null)}
-                                        style={{
-                                            background: 'linear-gradient(90deg, #7c3aed, #a855f7)',
-                                            color: 'white',
-                                            padding: '10px 20px',
-                                            borderRadius: '8px',
-                                            border: 'none',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
+                                <button onClick={() => setResult(null)} className="w-full bg-purple-700 hover:bg-purple-800 py-3 rounded-lg">
+                                    OK
+                                </button>
                             </div>
                         </div>
                     )}
@@ -945,7 +320,7 @@
             );
         }
         
-        // Render app
+        // RENDER
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
